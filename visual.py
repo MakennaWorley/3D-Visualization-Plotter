@@ -42,6 +42,9 @@ def draw_graph(data):
 
     vispy.app.run()
 
+def main():
+    data = [(0, 0, 0), (5, 0, 0), (0, 10, 0), (0, 0, 15)]
+    draw_graph(data)
 
-data = [(0, 0, 0), (5, 0, 0), (0, 10, 0), (0, 0, 15)]
-draw_graph(data)
+if __name__ == "__main__":
+    main()

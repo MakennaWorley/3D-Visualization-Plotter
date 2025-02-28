@@ -13,37 +13,37 @@ def draw_graph(data):
     canvas = vispy.scene.SceneCanvas(keys='interactive', show=True, bgcolor='black', size=(800, 600))
     view = canvas.central_widget.add_view()
 
-    x_center = (min(time) + max(time)) / 2
-    y_center = (min(prey) + max(prey)) / 2
-    z_center = (min(predator) + max(predator)) / 2
+    x_center = (time.min() + time.max()) / 2
+    y_center = (prey.min() + prey.max()) / 2
+    z_center = (predator.min() + predator.max()) / 2
 
+    max_range = max(time.ptp(), prey.ptp(), predator.ptp())
     view.camera = vispy.scene.cameras.TurntableCamera(
         center=(x_center, y_center, z_center),
         azimuth=45,
-        distance=max(max(time) - min(time), max(prey) - min(prey), max(predator) - min(predator)) * 2
+        distance=max_range * 1.5
     )
 
-    scatter = visuals.Markers()
-    scatter.set_data(np.c_[time, prey, predator], edge_color=None, face_color='blue', size=5)
-    view.add(scatter)
+    line = visuals.Line(pos=np.c_[time, prey, predator], color='blue', width=1)
+    view.add(line)
 
-    x_min, x_max = min(time), max(time)
-    y_min, y_max = min(prey), max(prey)
-    z_min, z_max = min(predator), max(predator)
+    x_min, x_max = time.min(), time.max()
+    y_min, y_max = prey.min(), prey.max()
+    z_min, z_max = predator.min(), predator.max()
 
-    line_width = 2
+    x_axis = visuals.Line(pos=np.array([[x_min, y_min, z_min], [x_max, y_min, z_min]]), color='red', width=2)
+    y_axis = visuals.Line(pos=np.array([[x_min, y_min, z_min], [x_min, y_max, z_min]]), color='blue', width=2)
+    z_axis = visuals.Line(pos=np.array([[x_min, y_min, z_min], [x_min, y_min, z_max]]), color='green', width=2)
 
-    x_axis = visuals.Line(pos=np.array([[x_min, y_min, z_min], [x_max, y_min, z_min]]), color='red',
-                          width=line_width, parent=view.scene)
-    y_axis = visuals.Line(pos=np.array([[x_min, y_min, z_min], [x_min, y_max, z_min]]), color='blue',
-                          width=line_width, parent=view.scene)
-    z_axis = visuals.Line(pos=np.array([[x_min, y_min, z_min], [x_min, y_min, z_max]]), color='green',
-                          width=line_width, parent=view.scene)
+    view.add(x_axis)
+    view.add(y_axis)
+    view.add(z_axis)
 
     vispy.app.run()
 
 def main():
-    data = [(0, 0, 0), (5, 0, 0), (0, 10, 0), (0, 0, 15)]
+    data = np.column_stack(
+        (np.linspace(0, 25, 2500), np.sin(np.linspace(0, 25, 2500)), np.cos(np.linspace(0, 25, 2500))))
     draw_graph(data)
 
 if __name__ == "__main__":

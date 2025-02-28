@@ -116,7 +116,7 @@ def main():
     predator = Predator(growth_rate=-1, control_rate=0.8, prey_letter="R", predator_letter="F")
 
     euler = Euler(initial_prey_population=1, initial_predator_population=1, prey=prey, predator=predator,
-                     time_step=0.5, start_time=0, final_time=1)
+                     time_step=0.05, start_time=0, final_time=12)
 
     print(euler)
 

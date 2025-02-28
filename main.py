@@ -1,8 +1,6 @@
 from euler import *
-from vispy import *
+from visual import *
 import re
-
-from visual import draw_graph
 
 
 def get_positive_float_input(prompt, allow_zero=False):
@@ -115,5 +113,17 @@ def main():
 
     draw_graph(data)
 
+def tst_main():
+    prey = Prey(growth_rate=3, control_rate=-1.4, prey_letter="R", predator_letter="F")
+    predator = Predator(growth_rate=-1, control_rate=0.8, prey_letter="R", predator_letter="F")
+
+    euler = set_up_euler(prey, predator)
+
+    print("\nEuler Object:", euler)
+
+    data = euler.calculate_points()
+
+    draw_graph(data)
+
 if __name__ == '__main__':
-    main()
+    tst_main()

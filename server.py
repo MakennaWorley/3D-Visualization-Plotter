@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from fastapi.responses import FileResponse
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -13,9 +13,10 @@ app = FastAPI()
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-@app.get("/")
-def home():
-    return FileResponse("static/index.html")
+@app.get("/", response_class=HTMLResponse)
+async def read_index():
+    with open("templates/index.html", "r") as f:
+        return f.read()
 
 app.add_middleware(
     CORSMiddleware,
@@ -33,6 +34,7 @@ class PreyPredatorInput(BaseModel):
     time_step: float
     start_time: float
     final_time: float
+
 @app.post("/simulate")
 def simulate(input_data: PreyPredatorInput):
     try:

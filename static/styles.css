@@ -1,0 +1,40 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    display: flex;
+    height: 100vh;
+    background-color: black;
+    overflow: hidden;
+}
+
+#graph-container {
+    flex: 1;
+    background-color: black;
+}
+
+#ui {
+    width: 300px;
+    height: 100vh;
+    background: white;
+    padding: 20px;
+    box-shadow: -5px 0px 10px rgba(0,0,0,0.2);
+    overflow-y: auto;
+}
+
+input, button {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 5px;
+    font-size: 14px;
+}
+
+button {
+    background: #007BFF;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #0056b3;
+}

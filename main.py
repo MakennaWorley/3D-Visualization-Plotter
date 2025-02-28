@@ -25,6 +25,7 @@ def parse_equation(equation):
     predator_letter = None
 
     for coefficient, var1, var2 in terms:
+        # No stated numerical coefficient (-F or +R)
         if coefficient in ["", "+"]:
             coefficient = 1.0
         elif coefficient == "-":
@@ -50,7 +51,6 @@ def parse_equation(equation):
 
     if not prey_letter or not predator_letter:
         raise ValueError("Invalid equation format. Ensure it contains prey and predator terms.")
-
 
     #print(growth_rate, control_rate, prey_letter, predator_letter)
 

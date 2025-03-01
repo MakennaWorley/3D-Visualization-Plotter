@@ -59,15 +59,15 @@ class Euler:
                                                       self.predator_population)
         results = [(time, self.prey_population, d_prey, self.predator_population, d_predator)]
 
-        self.prey_population += (d_prey * self.time_step)
-        self.predator_population += (d_predator * self.time_step)
+        self.prey_population = max(0, self.prey_population + (d_prey * self.time_step))
+        self.predator_population = max(0, self.predator_population + (d_predator * self.time_step))
 
         while time < self.final_time:
             d_prey = self.prey.change_in_prey(self.prey_population, self.predator_population)
             d_predator = self.predator.change_in_predator(self.prey_population,
                                                           self.predator_population)
-            self.prey_population += (d_prey * self.time_step)
-            self.predator_population += (d_predator * self.time_step)
+            self.prey_population = max(0, self.prey_population + (d_prey * self.time_step))
+            self.predator_population = max(0, self.predator_population + (d_predator * self.time_step))
             time += self.time_step
 
             results.append((time, self.prey_population, d_prey, self.predator_population, d_predator))
@@ -81,15 +81,15 @@ class Euler:
                                                       self.predator_population)
         results = [(time, self.prey_population, self.predator_population)]
 
-        self.prey_population += (d_prey * self.time_step)
-        self.predator_population += (d_predator * self.time_step)
+        self.prey_population = max(0, self.prey_population + (d_prey * self.time_step))
+        self.predator_population = max(0, self.predator_population + (d_predator * self.time_step))
 
         while time < self.final_time:
             d_prey = self.prey.change_in_prey(self.prey_population, self.predator_population)
             d_predator = self.predator.change_in_predator(self.prey_population,
                                                           self.predator_population)
-            self.prey_population += (d_prey * self.time_step)
-            self.predator_population += (d_predator * self.time_step)
+            self.prey_population = max(0, self.prey_population + (d_prey * self.time_step))
+            self.predator_population = max(0, self.predator_population + (d_predator * self.time_step))
             time += self.time_step
 
             results.append((time, self.prey_population, self.predator_population))
@@ -115,8 +115,8 @@ def main():
     prey = Prey(growth_rate=3, control_rate=-1.4, prey_letter="R", predator_letter="F")
     predator = Predator(growth_rate=-1, control_rate=0.8, prey_letter="R", predator_letter="F")
 
-    euler = Euler(initial_prey_population=1, initial_predator_population=1, prey=prey, predator=predator,
-                     time_step=0.05, start_time=0, final_time=12)
+    euler = Euler(initial_prey_population=10, initial_predator_population=1, prey=prey, predator=predator,
+                     time_step=0.05, start_time=0, final_time=25)
 
     print(euler)
 

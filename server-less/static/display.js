@@ -1,4 +1,4 @@
-import { Prey, Predator, Euler, setUpPreyPredator, setUpEuler } from "./euler.js";
+import { setUpEuler, setUpPreyPredator } from "./euler.js";
 
 let camera = null;
 let controls = null;
@@ -15,7 +15,7 @@ function runSimulation() {
     const initialPreyPopulation = parseFloat(document.getElementById("initial_prey").value);
     const initialPredatorPopulation = parseFloat(document.getElementById("initial_predator").value);
     const timeStep = parseFloat(document.getElementById("time_step").value);
-    const startTime = parseFloat(document.getElementById("start_time").value);
+    const startTime = 0;
     const finalTime = parseFloat(document.getElementById("final_time").value);
 
     try {

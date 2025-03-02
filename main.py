@@ -2,7 +2,6 @@ from euler import *
 from visual import *
 import re
 
-
 def get_positive_float_input(prompt, allow_zero=False):
     while True:
         try:
@@ -117,7 +116,8 @@ def tst_main():
     prey = Prey(growth_rate=3, control_rate=-1.4, prey_letter="R", predator_letter="F")
     predator = Predator(growth_rate=-1, control_rate=0.8, prey_letter="R", predator_letter="F")
 
-    euler = set_up_euler(prey, predator)
+    euler = Euler(1, 1, prey, predator, .05, 0,
+                     12)
 
     print("\nEuler Object:", euler)
 

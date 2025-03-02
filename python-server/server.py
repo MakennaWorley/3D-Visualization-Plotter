@@ -9,14 +9,16 @@ from main import parse_equation
 
 import math
 import uvicorn
+import os
 
 app = FastAPI()
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 
 @app.get("/", response_class=HTMLResponse)
 async def read_index():
-    with open("templates/index.html", "r") as f:
+    with open(os.path.join(BASE_DIR, "templates", "index.html"), "r") as f:
         return f.read()
 
 app.add_middleware(

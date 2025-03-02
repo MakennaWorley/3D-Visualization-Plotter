@@ -84,7 +84,7 @@ def draw_graph(data):
         color='white',
         pos=(x_max, y_min, z_min),
         parent=g_view.scene,
-        font_size=48,
+        font_size=98,
         anchor_x='center',
         anchor_y='center',
     )
@@ -93,7 +93,7 @@ def draw_graph(data):
         color='white',
         pos=(x_min, y_max, z_min),
         parent=g_view.scene,
-        font_size=48,
+        font_size=98,
         anchor_x='center',
         anchor_y='center',
     )
@@ -102,7 +102,7 @@ def draw_graph(data):
         color='white',
         pos=(x_min, y_min, z_max),
         parent=g_view.scene,
-        font_size=48,
+        font_size=98,
         anchor_x='center',
         anchor_y='center',
     )

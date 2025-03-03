@@ -9,7 +9,7 @@ let maxTime = null;
 let maxPrey = null;
 let maxPredator = null;
 
-function runSimulation() {
+function generateGraph() {
     const preyEquation = document.getElementById("prey_equation").value;
     const predatorEquation = document.getElementById("predator_equation").value;
     const initialPreyPopulation = parseFloat(document.getElementById("initial_prey").value);
@@ -29,13 +29,14 @@ function runSimulation() {
             predator_population: predatorPopulation
         }));
 
-        visualizeData(simulationData);
+        visualizeData(simulationData, prey.getPreyLetter(), predator.getPredatorLetter());
     } catch (error) {
+        console.error("Error:", error.message);
         alert("Error: " + error.message);
     }
 }
 
-function visualizeData(simulationData) {
+function visualizeData(data, preyLetter, predatorLetter) {
     document.getElementById("graph-container").innerHTML = "";
 
     const scene = new THREE.Scene();
@@ -57,15 +58,15 @@ function visualizeData(simulationData) {
     labelRenderer.domElement.style.pointerEvents = "none";
     document.getElementById("graph-container").appendChild(labelRenderer.domElement);
 
-    maxTime = Math.max(...simulationData.map(d => d.time));
-    maxPrey = Math.max(...simulationData.map(d => d.prey_population));
-    maxPredator = Math.max(...simulationData.map(d => d.predator_population));
+    maxTime = Math.max(...data.map(d => d.time));
+    maxPrey = Math.max(...data.map(d => d.prey_population));
+    maxPredator = Math.max(...data.map(d => d.predator_population));
 
     midTime = maxTime / 2;
     midPrey = maxPrey / 2;
     midPredator = maxPredator / 2;
 
-    const points = simulationData.map(d => new THREE.Vector3(
+    const points = data.map(d => new THREE.Vector3(
         d.time,                 // x = time
         d.predator_population,  // y = predator
         -d.prey_population       // z = prey
@@ -104,9 +105,9 @@ function visualizeData(simulationData) {
         return label;
     }
 
-    createLabel("Time", new THREE.Vector3(maxTime + 2, 0, 0));
-    createLabel("Predator", new THREE.Vector3(0, maxPredator + 2, 0));
-    createLabel("Prey", new THREE.Vector3(0, 0, -maxPrey - 2));
+    createLabel("Time", new THREE.Vector3(maxTime, 0, 0));
+    createLabel(predatorLetter, new THREE.Vector3(0, maxPredator, 0));
+    createLabel(preyLetter, new THREE.Vector3(0, 0, -maxPrey));
 
     camera.position.set(maxTime * -1, maxPredator * 1.2, maxPrey * 0.7);
     camera.lookAt(midTime, midPredator, -midPrey);
@@ -120,6 +121,8 @@ function visualizeData(simulationData) {
     }
 
     animate();
+
+    document.querySelector(".navigation").style.display = "block";
 
     window.addEventListener('resize', () => {
         camera.aspect = (window.innerWidth - 300) / window.innerHeight;
@@ -170,5 +173,5 @@ function setCameraView(view) {
     controls.update();
 }
 
-window.runSimulation = runSimulation;
+window.generateGraph = generateGraph;
 window.setCameraView = setCameraView;

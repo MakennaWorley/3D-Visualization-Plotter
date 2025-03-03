@@ -9,6 +9,10 @@ export class Prey {
     changeInPrey(preyPopulation, predatorPopulation) {
         return this.growthRate * preyPopulation + this.controlRate * preyPopulation * predatorPopulation;
     }
+
+    getPreyLetter() {
+        return this.preyLetter;
+    }
 }
 
 export class Predator {
@@ -21,6 +25,10 @@ export class Predator {
 
     changeInPredator(preyPopulation, predatorPopulation) {
         return this.growthRate * predatorPopulation + this.controlRate * preyPopulation * predatorPopulation;
+    }
+
+    getPredatorLetter() {
+        return this.predatorLetter;
     }
 }
 

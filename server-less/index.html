@@ -10,37 +10,48 @@
     <link rel="stylesheet" href="static/styles.css">
 </head>
 <body>
+    <div id="header">
+        <h1>3D Visualizer</h1>
+    </div>
+
     <div id="graph-container"></div>
 
     <div id="ui">
-        <h2>3d Visualizer</h2>
-        <label>Prey Equation:</label>
-        <input type="text" id="prey_equation" value="3R - 1.4RF"><br>
+        <div class="input">
+            <h3>Equations</h3>
 
-        <label>Predator Equation:</label>
-        <input type="text" id="predator_equation" value="-F + .8RF"><br>
+            <label>Prey Equation:</label>
+            <input type="text" id="prey_equation" value="3R - 1.4RF"><br>
 
-        <label>Initial Prey Population:</label>
-        <input type="number" id="initial_prey" value="1"><br>
+            <label>Predator Equation:</label>
+            <input type="text" id="predator_equation" value="-F + .8RF"><br>
 
-        <label>Initial Predator Population:</label>
-        <input type="number" id="initial_predator" value="1"><br>
+            <label>Initial Prey Population:</label>
+            <input type="number" id="initial_prey" value="1"><br>
 
-        <label>Time Step:</label>
-        <input type="number" id="time_step" value="0.05"><br>
+            <label>Initial Predator Population:</label>
+            <input type="number" id="initial_predator" value="1"><br>
 
-        <label>Final Time:</label>
-        <input type="number" id="final_time" value="12"><br>
+            <label>Time Step:</label>
+            <input type="number" id="time_step" value="0.05"><br>
 
-        <button onclick="runSimulation()">Run Simulation</button>
+            <label>Final Time:</label>
+            <input type="number" id="final_time" value="12"><br>
 
-        <h2>Nagivation</h2>
+            <button onclick="generateGraph()">Graph!</button>
+        </div>
 
-        <button onclick="setCameraView('Angler')">Angler</button>
-        <button onclick="setCameraView('Fronter')">Fronter</button>
-        <button onclick="setCameraView('Sider')">Sider</button>
-        <button onclick="setCameraView('Topper')">Topper</button>
+        <div class="navigation">
+            <h3>Nagivation</h3>
 
+            <button onclick="setCameraView('Angler')">Angler</button>
+            <button onclick="setCameraView('Fronter')">Fronter</button>
+            <button onclick="setCameraView('Sider')">Sider</button>
+            <button onclick="setCameraView('Topper')">Topper</button>
+        </div>
+    </div>
+
+    <div id="footer">
         <p>Created by <a href="https://www.makennaworley.com" target="_blank">Makenna Worley</a> and Brynlee Thain</p>
     </div>
 

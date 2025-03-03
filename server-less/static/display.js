@@ -43,15 +43,16 @@ function visualizeData(data, preyLetter, predatorLetter) {
     scene.background = new THREE.Color(0x000000);
 
     let renderer = null;
+    let initialWidth = window.innerWidth;
 
-    if (window.innerWidth <= 800) {
-        camera = new THREE.PerspectiveCamera(75, (window.innerWidth) / window.innerHeight, 0.1, 1000);
+    if (initialWidth <= 800) {
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
         renderer = new THREE.WebGLRenderer();
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.getElementById("graph-container").appendChild(renderer.domElement);
     } else {
-        camera = new THREE.PerspectiveCamera(75, (window.innerWidth) / window.innerHeight, 0.1, 1000);
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
         renderer = new THREE.WebGLRenderer();
         renderer.setSize(window.innerWidth - 300, window.innerHeight);
@@ -62,7 +63,13 @@ function visualizeData(data, preyLetter, predatorLetter) {
     controls.enableDamping = true;
 
     const labelRenderer = new THREE.CSS2DRenderer();
-    labelRenderer.setSize(window.innerWidth - 300, window.innerHeight);
+
+    if (initialWidth <= 800) {
+        labelRenderer.setSize(initialWidth, window.innerHeight);
+    } else {
+        labelRenderer.setSize(initialWidth - 300, window.innerHeight);
+    }
+
     labelRenderer.domElement.style.position = "absolute";
     labelRenderer.domElement.style.top = "0px";
     labelRenderer.domElement.style.pointerEvents = "none";
@@ -79,7 +86,7 @@ function visualizeData(data, preyLetter, predatorLetter) {
     const points = data.map(d => new THREE.Vector3(
         d.time,                 // x = time
         d.predator_population,  // y = predator
-        -d.prey_population       // z = prey
+        -d.prey_population      // z = prey
     ));
 
     const geometry = new THREE.BufferGeometry().setFromPoints(points);
@@ -95,9 +102,9 @@ function visualizeData(data, preyLetter, predatorLetter) {
         scene.add(axisLine);
     }
 
-    createAxis([0, 0, 0], [maxTime, 0, 0], 0xff0000);     // Time
-    createAxis([0, 0, 0], [0, maxPredator, 0], 0x0000ff); // Predator
-    createAxis([0, 0, 0], [0, 0, -maxPrey], 0x00ff00);     // Prey
+    createAxis([0, 0, 0], [maxTime, 0, 0], 0xff0000);       // Time
+    createAxis([0, 0, 0], [0, maxPredator, 0], 0x0000ff);   // Predator
+    createAxis([0, 0, 0], [0, 0, -maxPrey], 0x00ff00);      // Prey
 
     function createLabel(text, position) {
         const div = document.createElement("div");
@@ -134,11 +141,12 @@ function visualizeData(data, preyLetter, predatorLetter) {
 
     document.querySelector(".navigation").style.display = "block";
 
-    window.addEventListener('resize', () => {
-        camera.aspect = (window.innerWidth - 300) / window.innerHeight;
+    window.observeInnerWidth((width) => {
+        const effectiveWidth = width <= 800 ? width : width - 300;
+        camera.aspect = effectiveWidth / window.innerHeight;
         camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth - 300, window.innerHeight);
-        labelRenderer.setSize(window.innerWidth - 300, window.innerHeight);
+        renderer.setSize(effectiveWidth, window.innerHeight);
+        labelRenderer.setSize(effectiveWidth, window.innerHeight);
     });
 }
 
@@ -155,25 +163,17 @@ function setCameraView(view) {
 
     switch (view) {
         case "Angler":
-            // +
             camera.position.set(maxTime * -1, maxPredator * 1.2, maxPrey * 0.7);
             break;
-
         case "Fronter":
-            // Prey-Predator +
             camera.position.set(2 * maxTime, midPredator, -midPrey);
             break;
-
         case "Sider":
-            // Time–Predator +
             camera.position.set(midTime, midPredator, 2 * maxPrey);
             break;
-
         case "Topper":
-            // Time–Prey
             camera.position.set(midTime, 3 * maxPredator, -midPrey);
             break;
-
         default:
             console.warn("Invalid view specified. Falling back to a distant perspective.");
             camera.position.set(2 * maxTime, 2 * maxPredator, -2 * maxPrey);
@@ -183,14 +183,32 @@ function setCameraView(view) {
     controls.update();
 }
 
+function observeInnerWidth(callback) {
+    callback(window.innerWidth);
+    window.addEventListener('resize', () => {
+        callback(window.innerWidth);
+    });
+}
+
+window.generateGraph = generateGraph;
+window.setCameraView = setCameraView;
+window.observeInnerWidth = observeInnerWidth;
+
 document.addEventListener("DOMContentLoaded", function () {
     const uiPanel = document.getElementById("ui");
     const toggleButton = document.getElementById("toggle-ui");
     const graphContainer = document.getElementById("graph-container");
     const navigationPanel = document.querySelector(".navigation");
 
-    function checkScreenSize() {
-        if (window.innerWidth <= 800) {
+    function updateUIPanelScrolling() {
+        uiPanel.style.height = "";
+        uiPanel.style.overflowY = "";
+    }
+
+    function checkScreenSize(width) {
+        const currentWidth = width || window.innerWidth;
+
+        if (currentWidth <= 800) {
             uiPanel.classList.add("collapsed");
             toggleButton.style.display = "flex";
             toggleButton.innerHTML = "▼";
@@ -198,40 +216,25 @@ document.addEventListener("DOMContentLoaded", function () {
             graphContainer.style.height = "calc(100vh - 50px)";
         } else {
             uiPanel.classList.remove("collapsed");
-            uiPanel.style.height("100%");
+            uiPanel.style.height = "100%";
             toggleButton.style.display = "none";
             graphContainer.style.width = "";
             graphContainer.style.height = "";
         }
+
+        updateUIPanelScrolling();
     }
+
+    window.observeInnerWidth(checkScreenSize);
+    checkScreenSize();
 
     toggleButton.addEventListener("click", function () {
         uiPanel.classList.toggle("collapsed");
-
         if (uiPanel.classList.contains("collapsed")) {
-            toggleButton.innerHTML = "▼"; // Down when UI is hidden
+            toggleButton.innerHTML = "▼";
         } else {
-            toggleButton.innerHTML = "▲"; // Up when UI is visible
-            uiPanel.style.maxHeight = "50vh"; // Ensure it doesn't exceed 50% of screen
-            uiPanel.style.overflowY = "auto"; // Ensure scrolling
+            toggleButton.innerHTML = "▲";
         }
+        updateUIPanelScrolling();
     });
-
-    window.addEventListener("resize", checkScreenSize);
-    checkScreenSize();
-
-    // Ensure scrolling is enabled when navigation is shown
-    function enableScrolling() {
-        if (navigationPanel.style.display === "block") {
-            uiPanel.style.maxHeight = "50vh"; // Prevent full screen takeover
-            uiPanel.style.overflowY = "auto"; // Ensure scrolling
-        }
-    }
-
-    // Monitor navigation panel appearance
-    const observer = new MutationObserver(enableScrolling);
-    observer.observe(navigationPanel, { attributes: true, childList: true, subtree: true });
 });
-
-window.generateGraph = generateGraph;
-window.setCameraView = setCameraView;

@@ -1,4 +1,4 @@
-import { setUpEuler, setUpPreyPredator } from "./euler.js";
+import { setUpEuler, setUpPreyPredator } from "./simulation.js";
 
 let camera = null;
 let controls = null;
@@ -8,6 +8,49 @@ let midPredator = null;
 let maxTime = null;
 let maxPrey = null;
 let maxPredator = null;
+
+function printTable(results) {
+    const headers = ["Time", "Prey", "ΔPrey", "Predator", "ΔPredator"];
+    const tableData = results.map(([t, prey, d_prey, predator, d_predator]) => [
+        t.toFixed(2),
+        prey.toFixed(4),
+        d_prey.toFixed(4),
+        predator.toFixed(4),
+        d_predator.toFixed(4)
+    ]);
+    const htmlTable = generateHTMLTable(headers, tableData);
+    document.getElementById("dataTable").innerHTML = htmlTable;
+}
+
+function printPoints(results) {
+    const headers = ["Time", "Prey", "Predator"];
+    const tableData = results.map(([t, prey, predator]) => [
+        t.toFixed(2),
+        prey.toFixed(4),
+        predator.toFixed(4)
+    ]);
+    const htmlTable = generateHTMLTable(headers, tableData);
+    document.getElementById("dataTable").innerHTML = htmlTable;
+}
+
+function generateHTMLTable(headers, tableData) {
+    let html = '<table border="1" cellspacing="0" cellpadding="5">';
+    html += '<thead><tr>';
+    headers.forEach(header => {
+        html += `<th>${header}</th>`;
+    });
+    html += '</tr></thead>';
+    html += '<tbody>';
+    tableData.forEach(row => {
+        html += '<tr>';
+        row.forEach(cell => {
+            html += `<td>${cell}</td>`;
+        });
+        html += '</tr>';
+    });
+    html += '</tbody></table>';
+    return html;
+}
 
 function generateGraph() {
     const preyEquation = document.getElementById("prey_equation").value;

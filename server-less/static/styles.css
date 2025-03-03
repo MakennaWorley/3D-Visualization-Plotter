@@ -33,6 +33,7 @@ body {
     background: white;
     padding: 10px 20px;
     text-align: center;
+    z-index: 3;
 }
 
 #graph-container {
@@ -90,6 +91,11 @@ button:hover {
 }
 
 @media (max-width: 800px) {
+    html, body {
+        overflow: hidden;
+        height: 100vh;
+    }
+
     body {
         display: grid;
         grid-template-rows: auto auto auto auto;
@@ -100,7 +106,33 @@ button:hover {
         grid-column: 1;
     }
 
+    #header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 100px;
+        background: white;
+        z-index: 3;
+    }
+
+    #footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 50px;
+        background: white;
+        text-align: center;
+        z-index: 3;
+    }
+
     #graph-container {
+        position: absolute;
+        top: 60px;
+        bottom: 50px;
+        left: 0;
+        right: 0;
         width: 100%;
         height: calc(100vh - 50px);
     }

@@ -1,4 +1,4 @@
-from euler import *
+from simulation import *
 from visual import *
 import re
 
@@ -86,44 +86,68 @@ def set_up_euler(prey, predator):
     initial_prey_population = get_positive_float_input("Initial prey population: ")
     initial_predator_population = get_positive_float_input("Initial predator population: ")
     time_step = get_positive_float_input("Time step (e.g., 0.5): ")
-    start_time = get_positive_float_input("Start time (e.g., 0): ", allow_zero=True)
-    final_time = get_positive_float_input("Final time (must be greater than start time): ")
+    #start_time = get_positive_float_input("Start time (e.g., 0): ", allow_zero=True)
+    #final_time = get_positive_float_input("Final time (must be greater than start time): ")
+    final_time = get_positive_float_input("Final time (must be greater than 0): ")
 
-    while final_time <= start_time:
+    #while final_time <= start_time:
+    while final_time <= 0:
         print("Final time must be greater than start time.")
         final_time = get_positive_float_input("Final time (must be greater than start time): ")
 
-    euler = Euler(initial_prey_population, initial_predator_population, prey, predator, time_step, start_time,
-                     final_time)
+    #euler = Euler(initial_prey_population, initial_predator_population, prey, predator, time_step, start_time, final_time)
+    euler = Euler(initial_prey_population, initial_predator_population, prey, predator, time_step, 0,
+                  final_time)
 
     return euler
+
+def set_up_runge_kutta(prey, predator):
+    print("\nEnter parameters for the Equation:")
+
+    initial_prey_population = get_positive_float_input("Initial prey population: ")
+    initial_predator_population = get_positive_float_input("Initial predator population: ")
+    time_step = get_positive_float_input("Time step (e.g., 0.5): ")
+    #start_time = get_positive_float_input("Start time (e.g., 0): ", allow_zero=True)
+    #final_time = get_positive_float_input("Final time (must be greater than start time): ")
+    final_time = get_positive_float_input("Final time (must be greater than 0): ")
+
+    # while final_time <= start_time:
+    while final_time <= 0:
+        print("Final time must be greater than start time.")
+        final_time = get_positive_float_input("Final time (must be greater than start time): ")
+
+    #rk = RungeKutta(initial_prey_population, initial_predator_population, prey, predator, time_step, start_time, final_time)
+    rk = RungeKutta(initial_prey_population, initial_predator_population, prey, predator, time_step, 0,
+                    final_time)
+
+    return rk
 
 def main():
     prey, predator = set_up_prey_predator()
 
-    #print("\nPrey Object:", prey)
-    #print("Predator Object:", predator)
+    method_choice = input("\nChoose simulation method: (E)uler or (R)unge-Kutta? ").strip().upper()
+    while method_choice not in ['E', 'R']:
+        print("Invalid choice. Please enter E for Euler or R for Runge-Kutta.")
+        method_choice = input("Choose simulation method: (E)uler or (R)unge-Kutta? ").strip().upper()
 
-    euler = set_up_euler(prey, predator)
+    if method_choice == 'E':
+        simulation = set_up_euler(prey, predator)
+    else:
+        simulation = set_up_runge_kutta(prey, predator)
 
-    print("\nEuler Object:", euler)
+    print(f"\nSimulation Object: {simulation}")
 
-    data = euler.calculate_points()
+    display_choice = input("\nDisplay results as (T)able or (G)raph? ").strip().upper()
+    while display_choice not in ['T', 'G']:
+        print("Invalid choice. Please enter T for Table or G for Graph.")
+        display_choice = input("Display results as (T)able or (G)raph? ").strip().upper()
 
-    draw_graph(data)
-
-def tst_main():
-    prey = Prey(growth_rate=3, control_rate=-1.4, prey_letter="R", predator_letter="F")
-    predator = Predator(growth_rate=-1, control_rate=0.8, prey_letter="R", predator_letter="F")
-
-    euler = Euler(1, 1, prey, predator, .05, 0,
-                     12)
-
-    print("\nEuler Object:", euler)
-
-    data = euler.calculate_points()
-
-    draw_graph(data)
+    if display_choice == 'T':
+        table_data = simulation.calculate_table()
+        simulation.print_table(table_data)
+    else:
+        points_data = simulation.calculate_points()
+        draw_graph(points_data)
 
 if __name__ == '__main__':
-    tst_main()
+    main()

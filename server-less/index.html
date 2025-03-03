@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3d Visualizer</title>
+    <title>3D Visualizer</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three/examples/js/renderers/CSS2DRenderer.js"></script>
@@ -13,6 +13,8 @@
     <div id="header">
         <h1>3D Visualizer</h1>
     </div>
+
+    <button id="toggle-ui">&#9664;</button>
 
     <div id="graph-container"></div>
 
@@ -42,8 +44,7 @@
         </div>
 
         <div class="navigation">
-            <h3>Nagivation</h3>
-
+            <h3>Navigation</h3>
             <button onclick="setCameraView('Angler')">Angler</button>
             <button onclick="setCameraView('Fronter')">Fronter</button>
             <button onclick="setCameraView('Sider')">Sider</button>
@@ -55,6 +56,6 @@
         <p>Created by <a href="https://www.makennaworley.com" target="_blank">Makenna Worley</a> and Brynlee Thain</p>
     </div>
 
-    <script type="module" src="static/display.js"></script>
+    <script type="module" src="static/display.js" defer></script>
 </body>
 </html>

@@ -42,11 +42,21 @@ function visualizeData(data, preyLetter, predatorLetter) {
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000000);
 
-    camera = new THREE.PerspectiveCamera(75, (window.innerWidth - 300) / window.innerHeight, 0.1, 1000);
+    let renderer = null;
 
-    const renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth - 300, window.innerHeight);
-    document.getElementById("graph-container").appendChild(renderer.domElement);
+    if (window.innerWidth <= 800) {
+        camera = new THREE.PerspectiveCamera(75, (window.innerWidth) / window.innerHeight, 0.1, 1000);
+
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById("graph-container").appendChild(renderer.domElement);
+    } else {
+        camera = new THREE.PerspectiveCamera(75, (window.innerWidth) / window.innerHeight, 0.1, 1000);
+
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth - 300, window.innerHeight);
+        document.getElementById("graph-container").appendChild(renderer.domElement);
+    }
 
     controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
@@ -172,6 +182,56 @@ function setCameraView(view) {
 
     controls.update();
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+    const uiPanel = document.getElementById("ui");
+    const toggleButton = document.getElementById("toggle-ui");
+    const graphContainer = document.getElementById("graph-container");
+    const navigationPanel = document.querySelector(".navigation");
+
+    function checkScreenSize() {
+        if (window.innerWidth <= 800) {
+            uiPanel.classList.add("collapsed");
+            toggleButton.style.display = "flex";
+            toggleButton.innerHTML = "▼";
+            graphContainer.style.width = "100%";
+            graphContainer.style.height = "calc(100vh - 50px)";
+        } else {
+            uiPanel.classList.remove("collapsed");
+            uiPanel.style.height("100%");
+            toggleButton.style.display = "none";
+            graphContainer.style.width = "";
+            graphContainer.style.height = "";
+        }
+    }
+
+    toggleButton.addEventListener("click", function () {
+        uiPanel.classList.toggle("collapsed");
+
+        if (uiPanel.classList.contains("collapsed")) {
+            toggleButton.innerHTML = "▼"; // Down when UI is hidden
+        } else {
+            toggleButton.innerHTML = "▲"; // Up when UI is visible
+            uiPanel.style.maxHeight = "50vh"; // Ensure it doesn't exceed 50% of screen
+            uiPanel.style.overflowY = "auto"; // Ensure scrolling
+        }
+    });
+
+    window.addEventListener("resize", checkScreenSize);
+    checkScreenSize();
+
+    // Ensure scrolling is enabled when navigation is shown
+    function enableScrolling() {
+        if (navigationPanel.style.display === "block") {
+            uiPanel.style.maxHeight = "50vh"; // Prevent full screen takeover
+            uiPanel.style.overflowY = "auto"; // Ensure scrolling
+        }
+    }
+
+    // Monitor navigation panel appearance
+    const observer = new MutationObserver(enableScrolling);
+    observer.observe(navigationPanel, { attributes: true, childList: true, subtree: true });
+});
 
 window.generateGraph = generateGraph;
 window.setCameraView = setCameraView;

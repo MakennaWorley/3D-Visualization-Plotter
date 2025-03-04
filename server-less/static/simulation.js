@@ -1,4 +1,4 @@
-export class Prey {
+class Prey {
     constructor(growthRate, controlRate, preyLetter, predatorLetter) {
         this.growthRate = growthRate;
         this.controlRate = controlRate;
@@ -19,7 +19,7 @@ export class Prey {
     }
 }
 
-export class Predator {
+class Predator {
     constructor(growthRate, controlRate, preyLetter, predatorLetter) {
         this.growthRate = growthRate;
         this.controlRate = controlRate;
@@ -53,17 +53,23 @@ export class Euler {
 
     calculatePoints() {
         let time = this.startTime;
-        let results = [[time, this.preyPopulation, this.predatorPopulation]];
+        let dPrey = this.prey.changeInPrey(this.preyPopulation, this.predatorPopulation);
+        let dPredator = this.predator.changeInPredator(this.preyPopulation, this.predatorPopulation);
+
+        let results = [[time, this.preyPopulation, dPrey, this.predatorPopulation, dPredator]];
+
+        this.preyPopulation = Math.max(0, this.preyPopulation + (dPrey * this.timeStep));
+        this.predatorPopulation = Math.max(0, this.predatorPopulation + (dPredator * this.timeStep));
 
         while (time < this.finalTime) {
-            let dPrey = this.prey.changeInPrey(this.preyPopulation, this.predatorPopulation);
-            let dPredator = this.predator.changeInPredator(this.preyPopulation, this.predatorPopulation);
+            dPrey = this.prey.changeInPrey(this.preyPopulation, this.predatorPopulation);
+            dPredator = this.predator.changeInPredator(this.preyPopulation, this.predatorPopulation);
 
             this.preyPopulation = Math.max(0, this.preyPopulation + (dPrey * this.timeStep));
             this.predatorPopulation = Math.max(0, this.predatorPopulation + (dPredator * this.timeStep));
             time += this.timeStep;
 
-            results.push([time, this.preyPopulation, this.predatorPopulation]);
+            results.push([time, this.preyPopulation, dPrey, this.predatorPopulation, dPredator]);
         }
         return results;
     }
@@ -81,32 +87,52 @@ class RungeKutta {
     }
 
     calculatePoints() {
-        const h = this.timeStep;
-        const results = [];
-
+        let h = this.timeStep;
         let time = this.startTime;
+        let results = [];
+
         let currentPrey = this.preyPopulation;
         let currentPred = this.predatorPopulation;
 
-        results.push([time, currentPrey, currentPred]);
+        let k1Prey = this.prey.changeInPrey(currentPrey, currentPred);
+        let k1Pred = this.predator.changeInPredator(currentPrey, currentPred);
+
+        let k2Prey = this.prey.changeInPrey(currentPrey + 0.5 * h * k1Prey, currentPred + 0.5 * h * k1Pred);
+        let k2Pred = this.predator.changeInPredator(currentPrey + 0.5 * h * k1Prey, currentPred + 0.5 * h * k1Pred);
+
+        let k3Prey = this.prey.changeInPrey(currentPrey + 0.5 * h * k2Prey, currentPred + 0.5 * h * k2Pred);
+        let k3Pred = this.predator.changeInPredator(currentPrey + 0.5 * h * k2Prey, currentPred + 0.5 * h * k2Pred);
+
+        let k4Prey = this.prey.changeInPrey(currentPrey + h * k3Prey, currentPred + h * k3Pred);
+        let k4Pred = this.predator.changeInPredator(currentPrey + h * k3Prey, currentPred + h * k3Pred);
+
+        let dPrey = (k1Prey + 2 * k2Prey + 2 * k3Prey + k4Prey) / 6;
+        let dPredator = (k1Pred + 2 * k2Pred + 2 * k3Pred + k4Pred) / 6;
+
+        results.push([time, currentPrey, dPrey, currentPred, dPredator]);
 
         while (time < this.finalTime) {
-            const k1Prey = this.prey.changeInPrey(currentPrey, currentPred);
-            const k1Pred = this.predator.changeInPredator(currentPrey, currentPred);
-            const k2Prey = this.prey.changeInPrey(currentPrey + 0.5 * h * k1Prey, currentPred + 0.5 * h * k1Pred);
-            const k2Pred = this.predator.changeInPredator(currentPrey + 0.5 * h * k1Prey, currentPred + 0.5 * h * k1Pred);
-            const k3Prey = this.prey.changeInPrey(currentPrey + 0.5 * h * k2Prey, currentPred + 0.5 * h * k2Pred);
-            const k3Pred = this.predator.changeInPredator(currentPrey + 0.5 * h * k2Prey, currentPred + 0.5 * h * k2Pred);
-            const k4Prey = this.prey.changeInPrey(currentPrey + h * k3Prey, currentPred + h * k3Pred);
-            const k4Pred = this.predator.changeInPredator(currentPrey + h * k3Prey, currentPred + h * k3Pred);
-            const deltaPrey = (k1Prey + 2 * k2Prey + 2 * k3Prey + k4Prey) / 6;
-            const deltaPred = (k1Pred + 2 * k2Pred + 2 * k3Pred + k4Pred) / 6;
+            k1Prey = this.prey.changeInPrey(currentPrey, currentPred);
+            k1Pred = this.predator.changeInPredator(currentPrey, currentPred);
 
-            currentPrey = Math.max(0, currentPrey + h * deltaPrey);
-            currentPred = Math.max(0, currentPred + h * deltaPred);
+            k2Prey = this.prey.changeInPrey(currentPrey + 0.5 * h * k1Prey, currentPred + 0.5 * h * k1Pred);
+            k2Pred = this.predator.changeInPredator(currentPrey + 0.5 * h * k1Prey, currentPred + 0.5 * h * k1Pred);
+
+            k3Prey = this.prey.changeInPrey(currentPrey + 0.5 * h * k2Prey, currentPred + 0.5 * h * k2Pred);
+            k3Pred = this.predator.changeInPredator(currentPrey + 0.5 * h * k2Prey, currentPred + 0.5 * h * k2Pred);
+
+            k4Prey = this.prey.changeInPrey(currentPrey + h * k3Prey, currentPred + h * k3Pred);
+            k4Pred = this.predator.changeInPredator(currentPrey + h * k3Prey, currentPred + h * k3Pred);
+
+            dPrey = (k1Prey + 2 * k2Prey + 2 * k3Prey + k4Prey) / 6;
+            dPredator = (k1Pred + 2 * k2Pred + 2 * k3Pred + k4Pred) / 6;
+
+            // Update populations using the weighted average slope
+            currentPrey = Math.max(0, currentPrey + h * dPrey);
+            currentPred = Math.max(0, currentPred + h * dPredator);
             time += h;
 
-            results.push([time, currentPrey, currentPred]);
+            results.push([time, currentPrey, dPrey, currentPred, dPredator]);
         }
         this.preyPopulation = currentPrey;
         this.predatorPopulation = currentPred;

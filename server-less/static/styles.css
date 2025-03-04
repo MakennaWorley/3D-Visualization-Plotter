@@ -18,22 +18,41 @@ body {
     overflow: hidden;
 }
 
+input, button {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 5px;
+    font-size: 14px;
+}
+
+button {
+    background: #452ee4;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #241291;
+}
+
 #header {
     grid-row: 1;
     grid-column: 1 / -1;
     background: white;
+    height: 100px;
     padding: 10px 20px;
     text-align: center;
-    z-index: 3;
 }
 
 #footer {
-    grid-row: 3;
-    grid-column: 1 / -1;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
     background: white;
-    padding: 10px 20px;
     text-align: center;
-    z-index: 3;
 }
 
 #graph-container {
@@ -45,6 +64,23 @@ body {
     place-items: center;
 }
 
+#table-container {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: auto;
+    height: 100vh;
+    background: white;
+    transition: right 0.3s ease-in-out;
+    overflow-y: auto;
+    z-index: 3;
+    padding: 20px;
+}
+
+#table-container.open {
+    right: 0;
+}
+
 #ui {
     grid-row: 2;
     grid-column: 2;
@@ -53,12 +89,31 @@ body {
     width: 300px;
     position: relative;
     transition: none;
-    max-height: 100%;
+    max-height: calc(100vh - 150px);
     overflow-y: auto;
 }
 
 #toggle-ui {
     display: none;
+}
+
+#toggle-table {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    color: black;
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 4;
+    display: none;
+}
+
+#dataTable {
+    margin-top: 20px;
+    overflow-x: auto;
 }
 
 #header h2, #header p,
@@ -82,28 +137,41 @@ body {
     display: flex;
     align-items: center;
     gap: 5px;
+    line-height: 1.2;
+}
+
+.horizontal input[type="radio"] {
+    margin-right: 8px;
 }
 
 .horizontal span {
     font-weight: bold;
 }
 
-input, button {
+.data-table {
     width: 100%;
-    margin-bottom: 10px;
-    padding: 5px;
-    font-size: 14px;
+    border-collapse: collapse;
+    background-color: #fff;
 }
 
-button {
-    background: #452ee4;
+.data-table th, .data-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+
+.data-table th {
+    background-color: #333;
     color: white;
-    border: none;
-    cursor: pointer;
+    font-weight: bold;
 }
 
-button:hover {
-    background: #241291;
+.data-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.data-table tr:hover {
+    background-color: #ddd;
 }
 
 @media (max-width: 800px) {
@@ -129,7 +197,7 @@ button:hover {
         right: 0;
         height: 100px;
         background: white;
-        z-index: 4;
+        z-index: 6;
     }
 
     #footer {
@@ -140,7 +208,6 @@ button:hover {
         height: 50px;
         background: white;
         text-align: center;
-        z-index: 2;
     }
 
     #graph-container {
@@ -151,7 +218,6 @@ button:hover {
         right: 0;
         width: 100%;
         height: calc(100vh - 50px);
-        z-index: 1;
     }
 
     #ui {
@@ -162,7 +228,7 @@ button:hover {
         padding: 20px;
         padding-top: 30px;
         transition: transform 0.3s ease-in-out;
-        z-index: 3;
+        z-index: 5;
         overflow-y: auto;
         max-height: 75vh;
     }
@@ -189,10 +255,48 @@ button:hover {
         display: flex;
         align-items: center;
         justify-content: center;
-        z-index: 4;
+        z-index: 10;
     }
 
     #toggle-ui.rotated {
         transform: rotate(180deg);
+    }
+
+    #table-container {
+        position: fixed;
+        top: 100px;
+        right: -100%;
+        width: 100%;
+        max-height: calc(100vh - 150px);
+        background: white;
+        transition: right 0.3s ease-in-out;
+        overflow-x: auto;
+        overflow-y: auto;
+        z-index: 3;
+        padding: 20px;
+        padding-bottom: 20px;
+    }
+
+    #table-container.open {
+        right: 0;
+    }
+
+    #toggle-table {
+        position: absolute;
+        top: 100px;
+        right: 5%;
+        transform: translateX(-50%);
+        background: none;
+        color: white;
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+        cursor: pointer;
+        z-index: 5;
+        display: none;
+    }
+
+    .table-open #toggle-table {
+        color: black;
     }
 }

@@ -167,3 +167,4 @@ files/
 node_modules/
 *.DS_Store
 .htaccess
+server-less/translate_code.py

@@ -1,4 +1,4 @@
-import { setUpEuler, setUpPreyPredator } from "./simulation.js";
+import { setUpPreyPredator, setUpEuler, setUpRungeKutta } from "./simulation.js";
 
 let camera = null;
 let controls = null;
@@ -63,8 +63,17 @@ function generateGraph() {
 
     try {
         const { prey, predator } = setUpPreyPredator(preyEquation, predatorEquation);
-        const euler = setUpEuler(prey, predator, initialPreyPopulation, initialPredatorPopulation, timeStep, startTime, finalTime);
-        const result = euler.calculatePoints();
+
+        const method = document.querySelector('input[name="method"]:checked').value;
+        let simulation;
+
+        if (method === "runge-kutta") {
+            simulation = setUpRungeKutta(prey, predator, initialPreyPopulation, initialPredatorPopulation, timeStep, startTime, finalTime);
+        } else {
+            simulation = setUpEuler(prey, predator, initialPreyPopulation, initialPredatorPopulation, timeStep, startTime, finalTime);
+        }
+
+        const result = simulation.calculatePoints();
 
         const simulationData = result.map(([time, preyPopulation, predatorPopulation]) => ({
             time,
@@ -212,7 +221,7 @@ function setCameraView(view) {
             camera.position.set(2 * maxTime, midPredator, -midPrey);
             break;
         case "Sider":
-            camera.position.set(midTime, midPredator, 2 * maxPrey);
+            camera.position.set(midTime, midPredator, 3 * maxPrey);
             break;
         case "Topper":
             camera.position.set(midTime, 3 * maxPredator, -midPrey);

@@ -149,5 +149,15 @@ def main():
         points_data = simulation.calculate_points()
         draw_graph(points_data)
 
+def main_test():
+    prey = Prey(3, -1.4, "R", "F")
+
+    predator = Predator(-1, .8, "R", "F")
+
+    euler = Euler(1, 1, prey, predator, .05, 0,
+                 12)
+
+    print(euler)
+
 if __name__ == '__main__':
-    main()
+    main_test()

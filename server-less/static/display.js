@@ -157,6 +157,7 @@ function visualizeData(data, preyLetter, predatorLetter) {
     animate();
 
     document.querySelector(".navigation").style.display = "block";
+    document.getElementById("toggle-table").style.display = "block";
 
     window.observeInnerWidth((width) => {
         const effectiveWidth = width <= 800 ? width : width - 300;
@@ -272,9 +273,10 @@ window.observeInnerWidth = observeInnerWidth;
 
 document.addEventListener("DOMContentLoaded", function () {
     const uiPanel = document.getElementById("ui");
-    const toggleButton = document.getElementById("toggle-ui");
+    const toggleButtonUI = document.getElementById("toggle-ui");
     const graphContainer = document.getElementById("graph-container");
-    const navigationPanel = document.querySelector(".navigation");
+    const toggleButtonTable = document.getElementById("toggle-table");
+    const tableContainer = document.getElementById("table-container");
 
     function updateUIPanelScrolling() {
         uiPanel.style.height = "";
@@ -286,16 +288,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (currentWidth <= 800) {
             uiPanel.classList.add("collapsed");
-            toggleButton.style.display = "flex";
-            toggleButton.innerHTML = "▼";
+            toggleButtonUI.style.display = "flex";
+            toggleButtonUI.innerHTML = "▼";
             graphContainer.style.width = "100%";
             graphContainer.style.height = "calc(100vh - 50px)";
+
+            tableContainer.classList.remove("drawer");
+            tableContainer.classList.add("mobile");
         } else {
             uiPanel.classList.remove("collapsed");
             uiPanel.style.height = "100%";
-            toggleButton.style.display = "none";
+            toggleButtonUI.style.display = "none";
             graphContainer.style.width = "";
             graphContainer.style.height = "";
+
+            tableContainer.classList.remove("mobile");
+            tableContainer.classList.add("drawer");
         }
 
         updateUIPanelScrolling();
@@ -304,13 +312,25 @@ document.addEventListener("DOMContentLoaded", function () {
     window.observeInnerWidth(checkScreenSize);
     checkScreenSize();
 
-    toggleButton.addEventListener("click", function () {
+    toggleButtonUI.addEventListener("click", function () {
         uiPanel.classList.toggle("collapsed");
+
         if (uiPanel.classList.contains("collapsed")) {
-            toggleButton.innerHTML = "▼";
+            toggleButtonUI.innerHTML = "▼";
         } else {
-            toggleButton.innerHTML = "▲";
+            toggleButtonUI.innerHTML = "▲";
         }
         updateUIPanelScrolling();
+    });
+
+    toggleButtonTable.addEventListener("click", function () {
+        tableContainer.classList.toggle("open");
+
+        if (tableContainer.classList.contains("open")) {
+            toggleButtonTable.innerHTML = "▶";
+            toggleButtonTable.style.background("none");
+        } else {
+            toggleButtonTable.innerHTML = "◀";
+        }
     });
 });

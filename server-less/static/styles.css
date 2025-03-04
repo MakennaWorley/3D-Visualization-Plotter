@@ -40,6 +40,7 @@ button:hover {
     grid-row: 1;
     grid-column: 1 / -1;
     background: white;
+    height: 100px;
     padding: 10px 20px;
     text-align: center;
 }
@@ -70,7 +71,6 @@ button:hover {
     width: auto;
     height: 100vh;
     background: white;
-    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
     transition: right 0.3s ease-in-out;
     overflow-y: auto;
     z-index: 3;
@@ -89,7 +89,7 @@ button:hover {
     width: 300px;
     position: relative;
     transition: none;
-    max-height: 100%;
+    max-height: calc(100vh - 150px);
     overflow-y: auto;
 }
 
@@ -103,8 +103,6 @@ button:hover {
     right: 20px;
     background: none;
     color: black;
-    border: none;
-    border-radius: 50%;
     width: 40px;
     height: 40px;
     font-size: 20px;
@@ -139,6 +137,11 @@ button:hover {
     display: flex;
     align-items: center;
     gap: 5px;
+    line-height: 1.2;
+}
+
+.horizontal input[type="radio"] {
+    margin-right: 8px;
 }
 
 .horizontal span {
@@ -260,19 +263,40 @@ button:hover {
     }
 
     #table-container {
-        position: absolute;
-        top: calc(100% + 10px);
-        left: 0;
+        position: fixed;
+        top: 100px;
+        right: -100%;
         width: 100%;
-        height: auto;
-        right: unset;
+        max-height: calc(100vh - 150px);
+        background: white;
+        transition: right 0.3s ease-in-out;
+        overflow-x: auto;
+        overflow-y: auto;
+        z-index: 3;
+        padding: 20px;
+        padding-bottom: 20px;
+    }
+
+    #table-container.open {
+        right: 0;
     }
 
     #toggle-table {
         position: absolute;
         top: 100px;
         right: 5%;
-        transform: translateX(50%);
-        z-index: 4;
+        transform: translateX(-50%);
+        background: none;
+        color: white;
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+        cursor: pointer;
+        z-index: 5;
+        display: none;
+    }
+
+    .table-open #toggle-table {
+        color: black;
     }
 }

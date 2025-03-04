@@ -107,14 +107,14 @@ function visualizeData(data, preyLetter, predatorLetter) {
     });
 
     const geometry = new THREE.BufferGeometry().setFromPoints(points);
-    const material = new THREE.LineBasicMaterial({ color: 0xffffff });
+    const material = new THREE.LineBasicMaterial({color: 0xffffff, linewidth: 2});
     const line = new THREE.Line(geometry, material);
     scene.add(line);
 
     function createAxis(start, end, color) {
         const points = [new THREE.Vector3(...start), new THREE.Vector3(...end)];
         const axisGeometry = new THREE.BufferGeometry().setFromPoints(points);
-        const axisMaterial = new THREE.LineBasicMaterial({color, linewidth: 2});
+        const axisMaterial = new THREE.LineBasicMaterial({color, linewidth: 10});
         const axisLine = new THREE.Line(axisGeometry, axisMaterial);
         scene.add(axisLine);
     }
@@ -327,9 +327,10 @@ document.addEventListener("DOMContentLoaded", function () {
         tableContainer.classList.toggle("open");
 
         if (tableContainer.classList.contains("open")) {
+            document.body.classList.add("table-open");
             toggleButtonTable.innerHTML = "▶";
-            toggleButtonTable.style.background("none");
         } else {
+            document.body.classList.remove("table-open");
             toggleButtonTable.innerHTML = "◀";
         }
     });

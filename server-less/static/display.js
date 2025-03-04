@@ -9,50 +9,7 @@ let maxTime = null;
 let maxPrey = null;
 let maxPredator = null;
 
-function printTable(results) {
-    const headers = ["Time", "Prey", "ΔPrey", "Predator", "ΔPredator"];
-    const tableData = results.map(([t, prey, d_prey, predator, d_predator]) => [
-        t.toFixed(2),
-        prey.toFixed(4),
-        d_prey.toFixed(4),
-        predator.toFixed(4),
-        d_predator.toFixed(4)
-    ]);
-    const htmlTable = generateHTMLTable(headers, tableData);
-    document.getElementById("dataTable").innerHTML = htmlTable;
-}
-
-function printPoints(results) {
-    const headers = ["Time", "Prey", "Predator"];
-    const tableData = results.map(([t, prey, predator]) => [
-        t.toFixed(2),
-        prey.toFixed(4),
-        predator.toFixed(4)
-    ]);
-    const htmlTable = generateHTMLTable(headers, tableData);
-    document.getElementById("dataTable").innerHTML = htmlTable;
-}
-
-function generateHTMLTable(headers, tableData) {
-    let html = '<table border="1" cellspacing="0" cellpadding="5">';
-    html += '<thead><tr>';
-    headers.forEach(header => {
-        html += `<th>${header}</th>`;
-    });
-    html += '</tr></thead>';
-    html += '<tbody>';
-    tableData.forEach(row => {
-        html += '<tr>';
-        row.forEach(cell => {
-            html += `<td>${cell}</td>`;
-        });
-        html += '</tr>';
-    });
-    html += '</tbody></table>';
-    return html;
-}
-
-function generateGraph() {
+function runSimulation() {
     const preyEquation = document.getElementById("prey_equation").value;
     const predatorEquation = document.getElementById("predator_equation").value;
     const initialPreyPopulation = parseFloat(document.getElementById("initial_prey").value);
@@ -64,6 +21,8 @@ function generateGraph() {
     try {
         const { prey, predator } = setUpPreyPredator(preyEquation, predatorEquation);
 
+        //console.log(prey, predator)
+
         const method = document.querySelector('input[name="method"]:checked').value;
         let simulation;
 
@@ -73,15 +32,23 @@ function generateGraph() {
             simulation = setUpEuler(prey, predator, initialPreyPopulation, initialPredatorPopulation, timeStep, startTime, finalTime);
         }
 
+        //console.log(simulation)
+
         const result = simulation.calculatePoints();
 
-        const simulationData = result.map(([time, preyPopulation, predatorPopulation]) => ({
+        const simulationData = result.map(([time, preyPopulation, dPrey, predatorPopulation, dPredator]) => ({
             time,
             prey_population: preyPopulation,
-            predator_population: predatorPopulation
+            d_prey: dPrey,
+            predator_population: predatorPopulation,
+            d_predator: dPredator
         }));
 
-        visualizeData(simulationData, prey.getPreyLetter(), predator.getPredatorLetter());
+        return {
+            simulationData,
+            preyLetter: prey.getPreyLetter(),
+            predatorLetter: predator.getPredatorLetter()
+        };
     } catch (error) {
         console.error("Error:", error.message);
         alert("Error: " + error.message);
@@ -135,11 +102,9 @@ function visualizeData(data, preyLetter, predatorLetter) {
     midPrey = maxPrey / 2;
     midPredator = maxPredator / 2;
 
-    const points = data.map(d => new THREE.Vector3(
-        d.time,                 // x = time
-        d.predator_population,  // y = predator
-        -d.prey_population      // z = prey
-    ));
+    const points = data.map(({ time, prey_population, predator_population }) => {
+        return new THREE.Vector3(time, predator_population, -prey_population);  // z = prey
+    });
 
     const geometry = new THREE.BufferGeometry().setFromPoints(points);
     const material = new THREE.LineBasicMaterial({ color: 0xffffff });
@@ -242,7 +207,66 @@ function observeInnerWidth(callback) {
     });
 }
 
-window.generateGraph = generateGraph;
+function printTable(data, preyLetter, predatorLetter) {
+    const tableContainer = document.getElementById("dataTable");
+
+    if (!tableContainer) {
+        console.error("Error: Element with ID 'dataTable' not found.");
+        return;
+    }
+
+    tableContainer.innerHTML = "";
+
+    const table = document.createElement("table");
+    table.classList.add("data-table");
+
+    const thead = document.createElement("thead");
+    const headerRow = document.createElement("tr");
+
+    const headers = ["Time", preyLetter, "Δ" + preyLetter, predatorLetter, "Δ" + predatorLetter];
+    headers.forEach(headerText => {
+        const th = document.createElement("th");
+        th.textContent = headerText;
+        headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    data.forEach(({ time, prey_population, d_prey, predator_population, d_predator }) => {
+        const row = document.createElement("tr");
+
+        [time.toFixed(2), prey_population.toFixed(4), d_prey.toFixed(4), predator_population.toFixed(4), d_predator.toFixed(4)]
+            .forEach(value => {
+                const td = document.createElement("td");
+                td.textContent = value;
+                row.appendChild(td);
+            });
+
+        tbody.appendChild(row);
+    });
+
+    table.appendChild(tbody);
+    tableContainer.appendChild(table);
+}
+
+function generateData() {
+    const simulationResult = runSimulation();
+
+    if (!simulationResult) {
+        console.error("Simulation failed. No data returned.");
+        return;
+    }
+
+    const { simulationData, preyLetter, predatorLetter } = simulationResult;
+
+    //console.log(simulationData);
+
+    visualizeData(simulationData, preyLetter, predatorLetter);
+    printTable(simulationData, preyLetter, predatorLetter);
+}
+
+window.generateData = generateData;
 window.setCameraView = setCameraView;
 window.observeInnerWidth = observeInnerWidth;
 

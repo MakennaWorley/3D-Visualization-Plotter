@@ -11,6 +11,8 @@ class Prey {
     }
 
     changeInPrey(preyPopulation, predatorPopulation) {
+        if (preyPopulation === 0) return 0;
+
         return this.growthRate * preyPopulation + this.controlRate * preyPopulation * predatorPopulation;
     }
 
@@ -32,6 +34,8 @@ class Predator {
     }
 
     changeInPredator(preyPopulation, predatorPopulation) {
+        if (predatorPopulation === 0) return 0;
+
         return this.growthRate * predatorPopulation + this.controlRate * preyPopulation * predatorPopulation;
     }
 
@@ -58,15 +62,15 @@ export class Euler {
 
         let results = [[time, this.preyPopulation, dPrey, this.predatorPopulation, dPredator]];
 
-        this.preyPopulation = Math.max(0, this.preyPopulation + (dPrey * this.timeStep));
-        this.predatorPopulation = Math.max(0, this.predatorPopulation + (dPredator * this.timeStep));
+        this.preyPopulation = (this.preyPopulation === 0) ? 0 : Math.max(0, this.preyPopulation + (dPrey * this.timeStep));
+        this.predatorPopulation = (this.predatorPopulation === 0) ? 0 : Math.max(0, this.predatorPopulation + (dPredator * this.timeStep));
 
         while (time < this.finalTime) {
             dPrey = this.prey.changeInPrey(this.preyPopulation, this.predatorPopulation);
             dPredator = this.predator.changeInPredator(this.preyPopulation, this.predatorPopulation);
 
-            this.preyPopulation = Math.max(0, this.preyPopulation + (dPrey * this.timeStep));
-            this.predatorPopulation = Math.max(0, this.predatorPopulation + (dPredator * this.timeStep));
+            this.preyPopulation = (this.preyPopulation === 0) ? 0 : Math.max(0, this.preyPopulation + (dPrey * this.timeStep));
+            this.predatorPopulation = (this.predatorPopulation === 0) ? 0 : Math.max(0, this.predatorPopulation + (dPredator * this.timeStep));
             time += this.timeStep;
 
             results.push([time, this.preyPopulation, dPrey, this.predatorPopulation, dPredator]);
@@ -128,8 +132,8 @@ class RungeKutta {
             dPredator = (k1Pred + 2 * k2Pred + 2 * k3Pred + k4Pred) / 6;
 
             // Update populations using the weighted average slope
-            currentPrey = Math.max(0, currentPrey + h * dPrey);
-            currentPred = Math.max(0, currentPred + h * dPredator);
+            currentPrey = (currentPrey === 0) ? 0 : Math.max(0, currentPrey + h * dPrey);
+            currentPred = (currentPred === 0) ? 0 : Math.max(0, currentPred + h * dPredator);
             time += h;
 
             results.push([time, currentPrey, dPrey, currentPred, dPredator]);

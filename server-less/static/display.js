@@ -1,13 +1,16 @@
 import { setUpPreyPredator, setUpEuler, setUpRungeKutta } from "./simulation.js";
 
+const alpha = 1e-6; // Lower bound limit
+const beta = 1e5; // Upper bound for points on graph
+
 let camera = null;
 let controls = null;
-let midTime = null;
-let midPrey = null;
-let midPredator = null;
-let maxTime = null;
-let maxPrey = null;
-let maxPredator = null;
+let midTime = 0;
+let midPrey = 0;
+let midPredator = 0;
+let maxTime = 0;
+let maxPrey = 0;
+let maxPredator = 0;
 
 function runSimulation() {
     const preyEquation = document.getElementById("prey_equation").value;
@@ -17,6 +20,26 @@ function runSimulation() {
     const timeStep = parseFloat(document.getElementById("time_step").value);
     const startTime = 0;
     const finalTime = parseFloat(document.getElementById("final_time").value);
+
+    if (isNaN(initialPreyPopulation) || isNaN(initialPredatorPopulation) || isNaN(timeStep) || isNaN(finalTime)) {
+        alert("Error: Please enter valid numbers for all inputs.");
+        return;
+    }
+
+    if (initialPreyPopulation < 0 || initialPredatorPopulation < 0) {
+        alert("Error: Initial populations cannot be negative.");
+        return;
+    }
+
+    if (timeStep <= 0) {
+        alert("Error: Time step must be positive.");
+        return;
+    }
+
+    if (finalTime <= startTime) {
+        alert("Error: Final time must be greater than the start time.");
+        return;
+    }
 
     try {
         const { prey, predator } = setUpPreyPredator(preyEquation, predatorEquation);
@@ -35,6 +58,11 @@ function runSimulation() {
         //console.log(simulation)
 
         const result = simulation.calculatePoints();
+
+        if (!result.length) {
+            alert("Simulation produced no valid results.");
+            return;
+        }
 
         const simulationData = result.map(([time, preyPopulation, dPrey, predatorPopulation, dPredator]) => ({
             time,
@@ -56,6 +84,11 @@ function runSimulation() {
 }
 
 function visualizeData(data, preyLetter, predatorLetter) {
+    if (!data || data.length === 0) {
+        alert("Error: Could not generate data. Please check your inputs.");
+        return;
+    }
+
     document.getElementById("graph-container").innerHTML = "";
 
     const scene = new THREE.Scene();
@@ -68,6 +101,12 @@ function visualizeData(data, preyLetter, predatorLetter) {
         camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
         renderer = new THREE.WebGLRenderer();
+
+        if (!renderer) {
+            console.error("THREE.js renderer failed to initialize.");
+            return;
+        }
+
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.getElementById("graph-container").appendChild(renderer.domElement);
     } else {
@@ -95,16 +134,41 @@ function visualizeData(data, preyLetter, predatorLetter) {
     document.getElementById("graph-container").appendChild(labelRenderer.domElement);
 
     maxTime = Math.max(...data.map(d => d.time));
-    maxPrey = Math.max(...data.map(d => d.prey_population));
-    maxPredator = Math.max(...data.map(d => d.predator_population));
+    maxPrey = Math.max(1, ...data.map(d => d.prey_population));
+    maxPredator = Math.max(1, ...data.map(d => d.predator_population));
 
-    midTime = maxTime / 2;
-    midPrey = maxPrey / 2;
-    midPredator = maxPredator / 2;
+    //console.log("Max Values - Time:", maxTime, "Prey:", maxPrey, "Predator:", maxPredator);
+
+    if (maxTime > 0) {
+        midTime = maxTime / 2;
+    }
+    if (maxPrey > 0) {
+        midPrey = maxPrey / 2;
+    }
+    if (maxPredator > 0) {
+        midPredator = maxPredator / 2;
+    }
+
+    if (maxPrey > beta || maxPredator > beta) {
+        alert("Error: One of the max values for prey or predator is too big for three.js to generate");
+        return;
+    }
 
     const points = data.map(({ time, prey_population, predator_population }) => {
-        return new THREE.Vector3(time, predator_population, -prey_population);  // z = prey
+        return new THREE.Vector3(
+            time,
+            predator_population !== 0 ? predator_population : alpha,
+            prey_population !== 0 ? -prey_population : -alpha
+        );
     });
+
+    if (points.length === 0) {
+        alert("Error: Could not generate data. Please check your inputs.");
+        return;
+    } else if (points.length > beta) {
+        alert("Error: Please reduce your final time and/or increase timestep. three.js can't render that many points.");
+        return
+    }
 
     const geometry = new THREE.BufferGeometry().setFromPoints(points);
     const material = new THREE.LineBasicMaterial({color: 0xffffff, linewidth: 2});
@@ -255,13 +319,15 @@ function generateData() {
     const simulationResult = runSimulation();
 
     if (!simulationResult) {
-        console.error("Simulation failed. No data returned.");
+        alert("Error: Simulation failed. No data returned.");
         return;
     }
 
+    //console.log("Simulation result:", simulationResult);
+
     const { simulationData, preyLetter, predatorLetter } = simulationResult;
 
-    //console.log(simulationData);
+    //console.log("Calling visualizeData with:", simulationData);
 
     visualizeData(simulationData, preyLetter, predatorLetter);
     printTable(simulationData, preyLetter, predatorLetter);

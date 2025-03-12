@@ -1,3 +1,5 @@
+import { showAlert } from "./display.js";
+
 class Prey {
     constructor(growthRate, controlRate, preyLetter, predatorLetter) {
         this.growthRate = growthRate;
@@ -146,63 +148,86 @@ class RungeKutta {
 }
 
 export function parseEquation(equation) {
-    const termPattern = /([+-]?\d*\.?\d*)\s*([A-Z])?([A-Z])?/g;
-    let terms = [...equation.replace(/\s/g, "").matchAll(termPattern)];
+    try {
+        const termPattern = /([+-]?\d*\.?\d+|\d+|[+-])?\*?([A-Z])(?:\*?([A-Z]))?/g;
+        let terms = [...equation.replace(/\s/g, "").matchAll(termPattern)];
 
-    let growthRate = 0, controlRate = 0;
-    let preyLetter = null, predatorLetter = null;
+        console.log("Matched terms:", terms);
 
-    for (let [_, coefficient, var1, var2] of terms) {
+        let growthRate = 0, controlRate = 0;
+        let preyLetter = null, predatorLetter = null;
+
+        for (let [_, coefficient, var1, var2] of terms) {
         coefficient = coefficient === "" || coefficient === "+" ? 1.0 : coefficient === "-" ? -1.0 : parseFloat(coefficient);
 
-        if (var1 && !var2) {
-            if (!preyLetter) {
-                growthRate = coefficient;
-                preyLetter = var1;
-            } else {
-                predatorLetter = var1;
+            if (isNaN(coefficient)) {
+                showAlert(`Could not parse the coefficient: "${coefficient}"`);
+                return;
             }
-        } else if (var1 && var2) {
-            controlRate = coefficient;
-            preyLetter = var1;
-            predatorLetter = var2;
-        }
-    }
 
-    if (!predatorLetter && preyLetter) {
-        predatorLetter = preyLetter;
-        preyLetter = null;
+            if (var1 && !var2) {
+                if (!preyLetter) {
+                    growthRate = coefficient;
+                    preyLetter = var1;
+                } else {
+                    predatorLetter = var1;
+                }
+            } else if (var1 && var2) {
+                controlRate = coefficient;
+                preyLetter = var1;
+                predatorLetter = var2;
+            }
+        }
+
+        if (!predatorLetter && preyLetter) {
+            predatorLetter = preyLetter;
+            preyLetter = null;
+        }
+
+        if (!preyLetter || !predatorLetter) {
+            showAlert("Invalid equation format. Ensure it contains prey and predator terms.");
+            return;
+        }
+
+        console.log("Parsed values:", { growthRate, controlRate, preyLetter, predatorLetter });
+        return {growthRate, controlRate, preyLetter, predatorLetter};
+    } catch (error) {
+        showAlert("Cannot parse equation: " + equation);
+        return;
     }
-    if (!preyLetter || !predatorLetter) {
-        throw new Error("Invalid equation format. Ensure it contains prey and predator terms.");
-    }
-    return {growthRate, controlRate, preyLetter, predatorLetter};
 }
 
 export function setUpPreyPredator(preyEquation, predatorEquation) {
-    let preyParams = parseEquation(preyEquation);
-    let predatorParams = parseEquation(predatorEquation);
+    try {
+        let preyParams = parseEquation(preyEquation);
+        let predatorParams = parseEquation(predatorEquation);
 
-    if (preyParams.preyLetter !== predatorParams.preyLetter || preyParams.predatorLetter !== predatorParams.predatorLetter) {
-        throw new Error("Error: The variables in the equations must match.");
+        if (preyParams.preyLetter !== predatorParams.preyLetter || preyParams.predatorLetter !== predatorParams.predatorLetter) {
+            throw new Error("Error: The variables in the equations must match.");
+        }
+
+        let prey = new Prey(preyParams.growthRate, preyParams.controlRate, preyParams.preyLetter, preyParams.predatorLetter);
+        let predator = new Predator(predatorParams.growthRate, predatorParams.controlRate, preyParams.preyLetter, preyParams.predatorLetter);
+
+        return { prey, predator };
+    } catch (error) {
+        showAlert("Error setting up prey and predator: " + error.message);
+        return;
     }
-
-    let prey = new Prey(preyParams.growthRate, preyParams.controlRate, preyParams.preyLetter, preyParams.predatorLetter);
-    let predator = new Predator(predatorParams.growthRate, predatorParams.controlRate, preyParams.preyLetter, preyParams.predatorLetter);
-
-    return {prey, predator};
 }
 
 export function setUpEuler(prey, predator, initialPreyPopulation, initialPredatorPopulation, timeStep, startTime, finalTime) {
     if (finalTime <= startTime) {
-        throw new Error("Final time must be greater than start time.");
+        showAlert("Final time must be greater than start time.");
+        return;
     }
     return new Euler(initialPreyPopulation, initialPredatorPopulation, prey, predator, timeStep, startTime, finalTime);
 }
 
 export function setUpRungeKutta(prey, predator, initialPreyPopulation, initialPredatorPopulation, timeStep, startTime, finalTime) {
     if (finalTime <= startTime) {
-        throw new Error("Final time must be greater than start time.");
+        showAlert("Final time must be greater than start time.");
+        return;
     }
     return new RungeKutta(initialPreyPopulation, initialPredatorPopulation, prey, predator, timeStep, startTime, finalTime);
 }

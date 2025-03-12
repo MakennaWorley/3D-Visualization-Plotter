@@ -1,4 +1,4 @@
-import { setUpPreyPredator, setUpEuler, setUpRungeKutta } from "./simulation.js";
+import {setUpPreyPredator, setUpEuler, setUpRungeKutta} from "./simulation.js";
 
 const alpha = 1e-6; // Lower bound limit
 const beta = 1e5; // Upper bound for points on graph
@@ -21,30 +21,39 @@ function runSimulation() {
     const startTime = 0;
     const finalTime = parseFloat(document.getElementById("final_time").value);
 
+    console.log("Running simulation with:", {
+        preyEquation,
+        predatorEquation,
+        initialPreyPopulation,
+        initialPredatorPopulation,
+        timeStep,
+        finalTime
+    });
+
     if (isNaN(initialPreyPopulation) || isNaN(initialPredatorPopulation) || isNaN(timeStep) || isNaN(finalTime)) {
-        alert("Error: Please enter valid numbers for all inputs.");
+        showAlert("Error: Please enter valid numbers for all inputs.");
         return;
     }
 
     if (initialPreyPopulation < 0 || initialPredatorPopulation < 0) {
-        alert("Error: Initial populations cannot be negative.");
+        showAlert("Error: Initial populations cannot be negative.");
         return;
     }
 
     if (timeStep <= 0) {
-        alert("Error: Time step must be positive.");
+        showAlert("Error: Time step must be positive.");
         return;
     }
 
     if (finalTime <= startTime) {
-        alert("Error: Final time must be greater than the start time.");
+        showAlert("Error: Final time must be greater than the start time.");
         return;
     }
 
     try {
-        const { prey, predator } = setUpPreyPredator(preyEquation, predatorEquation);
+        const {prey, predator} = setUpPreyPredator(preyEquation, predatorEquation);
 
-        //console.log(prey, predator)
+        console.log(prey, predator)
 
         const method = document.querySelector('input[name="method"]:checked').value;
         let simulation;
@@ -60,7 +69,7 @@ function runSimulation() {
         const result = simulation.calculatePoints();
 
         if (!result.length) {
-            alert("Simulation produced no valid results.");
+            showAlert("Simulation produced no valid results.");
             return;
         }
 
@@ -78,15 +87,23 @@ function runSimulation() {
             predatorLetter: predator.getPredatorLetter()
         };
     } catch (error) {
-        console.error("Error:", error.message);
-        alert("Error: " + error.message);
+        showAlert("Error: " + error.message);
     }
 }
 
 function visualizeData(data, preyLetter, predatorLetter) {
     if (!data || data.length === 0) {
-        alert("Error: Could not generate data. Please check your inputs.");
+        showAlert("Error: Could not generate data. Please check your inputs.");
         return;
+    }
+
+    for (let i = 0; i < data.length; i++) {
+        const {time, prey_population, predator_population} = data[i];
+        if (isNaN(time) || isNaN(prey_population) || isNaN(predator_population)) {
+            showAlert("Error: Simulation data contains invalid values. Please check your input equations and parameters.");
+            console.error("NaN detected in simulation data at index", i, data[i]);
+            return;
+        }
     }
 
     document.getElementById("graph-container").innerHTML = "";
@@ -150,23 +167,23 @@ function visualizeData(data, preyLetter, predatorLetter) {
     }
 
     if (maxPrey > beta || maxPredator > beta) {
-        alert("Error: One of the max values for prey or predator is too big for three.js to generate");
+        showAlert("Error: One of the max values for prey or predator is too big for three.js to generate");
         return;
     }
 
-    const points = data.map(({ time, prey_population, predator_population }) => {
+    const points = data.map(({time, prey_population, predator_population}) => {
         return new THREE.Vector3(
             time,
             predator_population !== 0 ? predator_population : alpha,
             prey_population !== 0 ? -prey_population : -alpha
         );
-    });
+    }).filter(p => p !== null);
 
     if (points.length === 0) {
-        alert("Error: Could not generate data. Please check your inputs.");
+        showAlert("Error: Could not generate data. Please check your inputs.");
         return;
     } else if (points.length > beta) {
-        alert("Error: Please reduce your final time and/or increase timestep. three.js can't render that many points.");
+        showAlert("Error: Please reduce your final time and/or increase timestep. three.js can't render that many points.");
         return
     }
 
@@ -298,7 +315,7 @@ function printTable(data, preyLetter, predatorLetter) {
     table.appendChild(thead);
 
     const tbody = document.createElement("tbody");
-    data.forEach(({ time, prey_population, d_prey, predator_population, d_predator }) => {
+    data.forEach(({time, prey_population, d_prey, predator_population, d_predator}) => {
         const row = document.createElement("tr");
 
         [time.toFixed(2), prey_population.toFixed(4), d_prey.toFixed(4), predator_population.toFixed(4), d_predator.toFixed(4)]
@@ -319,18 +336,55 @@ function generateData() {
     const simulationResult = runSimulation();
 
     if (!simulationResult) {
-        alert("Error: Simulation failed. No data returned.");
+        showAlert("Error: Simulation failed. No data returned.");
         return;
     }
 
     //console.log("Simulation result:", simulationResult);
 
-    const { simulationData, preyLetter, predatorLetter } = simulationResult;
+    const {simulationData, preyLetter, predatorLetter} = simulationResult;
 
     //console.log("Calling visualizeData with:", simulationData);
 
     visualizeData(simulationData, preyLetter, predatorLetter);
     printTable(simulationData, preyLetter, predatorLetter);
+}
+
+export function showAlert(message) {
+    const alertBox = document.getElementById("custom-alert");
+    const alertMessage = document.getElementById("alert-message");
+    const closeButton = document.getElementById("close-alert");
+    const errorSound = document.getElementById("error-sound");
+
+    alertMessage.textContent = message;
+    alertBox.style.display = "flex";
+
+    closeButton.replaceWith(closeButton.cloneNode(true));
+
+    let soundInterval = null;
+
+    if (errorSound) {
+        errorSound.volume = 1;
+        errorSound.currentTime = 0;
+        errorSound.play().catch(err => console.error("Error playing sound:", err));
+
+        soundInterval = setInterval(() => {
+            errorSound.currentTime = 0;
+            errorSound.play().catch(err => console.error("Error playing sound:", err));
+        }, errorSound.duration * 1000);
+    }
+
+    document.getElementById("close-alert").addEventListener("click", function () {
+        alertBox.style.display = "none";
+
+        alert("I am 74% sure that someone will try to mess up my tool. 40% positive it will be Brynlee because she is QA" +
+            " testing which makes sense and is excusable, 24% positive it will be Andrew because he just would, and 10% Cooper" +
+            " because he's curious if this program can do everything.")
+
+        clearInterval(soundInterval);
+        errorSound.pause();
+        errorSound.currentTime = 0;
+    });
 }
 
 window.generateData = generateData;

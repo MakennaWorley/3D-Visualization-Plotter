@@ -21,6 +21,15 @@ function runSimulation() {
     const startTime = 0;
     const finalTime = parseFloat(document.getElementById("final_time").value);
 
+    console.log("Running simulation with:", {
+        preyEquation,
+        predatorEquation,
+        initialPreyPopulation,
+        initialPredatorPopulation,
+        timeStep,
+        finalTime
+    });
+
     if (isNaN(initialPreyPopulation) || isNaN(initialPredatorPopulation) || isNaN(timeStep) || isNaN(finalTime)) {
         alert("Error: Please enter valid numbers for all inputs.");
         return;
@@ -44,7 +53,7 @@ function runSimulation() {
     try {
         const { prey, predator } = setUpPreyPredator(preyEquation, predatorEquation);
 
-        //console.log(prey, predator)
+        console.log(prey, predator)
 
         const method = document.querySelector('input[name="method"]:checked').value;
         let simulation;

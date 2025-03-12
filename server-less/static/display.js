@@ -1,4 +1,4 @@
-import { setUpPreyPredator, setUpEuler, setUpRungeKutta } from "./simulation.js";
+import {setUpPreyPredator, setUpEuler, setUpRungeKutta} from "./simulation.js";
 
 const alpha = 1e-6; // Lower bound limit
 const beta = 1e5; // Upper bound for points on graph
@@ -51,7 +51,7 @@ function runSimulation() {
     }
 
     try {
-        const { prey, predator } = setUpPreyPredator(preyEquation, predatorEquation);
+        const {prey, predator} = setUpPreyPredator(preyEquation, predatorEquation);
 
         console.log(prey, predator)
 
@@ -98,7 +98,7 @@ function visualizeData(data, preyLetter, predatorLetter) {
     }
 
     for (let i = 0; i < data.length; i++) {
-        const { time, prey_population, predator_population } = data[i];
+        const {time, prey_population, predator_population} = data[i];
         if (isNaN(time) || isNaN(prey_population) || isNaN(predator_population)) {
             showAlert("Error: Simulation data contains invalid values. Please check your input equations and parameters.");
             console.error("NaN detected in simulation data at index", i, data[i]);
@@ -171,7 +171,7 @@ function visualizeData(data, preyLetter, predatorLetter) {
         return;
     }
 
-    const points = data.map(({ time, prey_population, predator_population }) => {
+    const points = data.map(({time, prey_population, predator_population}) => {
         return new THREE.Vector3(
             time,
             predator_population !== 0 ? predator_population : alpha,
@@ -315,7 +315,7 @@ function printTable(data, preyLetter, predatorLetter) {
     table.appendChild(thead);
 
     const tbody = document.createElement("tbody");
-    data.forEach(({ time, prey_population, d_prey, predator_population, d_predator }) => {
+    data.forEach(({time, prey_population, d_prey, predator_population, d_predator}) => {
         const row = document.createElement("tr");
 
         [time.toFixed(2), prey_population.toFixed(4), d_prey.toFixed(4), predator_population.toFixed(4), d_predator.toFixed(4)]
@@ -342,7 +342,7 @@ function generateData() {
 
     //console.log("Simulation result:", simulationResult);
 
-    const { simulationData, preyLetter, predatorLetter } = simulationResult;
+    const {simulationData, preyLetter, predatorLetter} = simulationResult;
 
     //console.log("Calling visualizeData with:", simulationData);
 
@@ -354,21 +354,36 @@ export function showAlert(message) {
     const alertBox = document.getElementById("custom-alert");
     const alertMessage = document.getElementById("alert-message");
     const closeButton = document.getElementById("close-alert");
+    const errorSound = document.getElementById("error-sound");
 
     alertMessage.textContent = message;
-
     alertBox.style.display = "flex";
 
     closeButton.replaceWith(closeButton.cloneNode(true));
 
+    let soundInterval = null;
+
+    if (errorSound) {
+        errorSound.volume = 1;
+        errorSound.currentTime = 0;
+        errorSound.play().catch(err => console.error("Error playing sound:", err));
+
+        soundInterval = setInterval(() => {
+            errorSound.currentTime = 0;
+            errorSound.play().catch(err => console.error("Error playing sound:", err));
+        }, errorSound.duration * 1000);
+    }
+
     document.getElementById("close-alert").addEventListener("click", function () {
         alertBox.style.display = "none";
-    });
 
-    alertBox.addEventListener("click", function (event) {
-        if (event.target === alertBox) {
-            alertBox.style.display = "none";
-        }
+        alert("I am 74% sure that someone will try to mess up my tool. 40% positive it will be Brynlee because she is QA" +
+            " testing which makes sense and is excusable, 24% positive it will be Andrew because he just would, and 10% Cooper" +
+            " because he's curious if this program can do everything.")
+
+        clearInterval(soundInterval);
+        errorSound.pause();
+        errorSound.currentTime = 0;
     });
 }
 

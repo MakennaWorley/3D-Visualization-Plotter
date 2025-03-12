@@ -160,6 +160,7 @@ export function parseEquation(equation) {
 
             if (isNaN(coefficient)) {
                 alert(`Could not parse the coefficient: "${coefficient}"`);
+                return;
             }
 
             if (var1 && !var2) {
@@ -183,13 +184,14 @@ export function parseEquation(equation) {
 
         if (!preyLetter || !predatorLetter) {
             alert("Invalid equation format. Ensure it contains prey and predator terms.");
+            return;
         }
 
         console.log("Parsed values:", { growthRate, controlRate, preyLetter, predatorLetter });
         return {growthRate, controlRate, preyLetter, predatorLetter};
     } catch (error) {
         alert("Cannot parse equation: " + equation);
-        throw error;
+        return;
     }
 }
 
@@ -208,14 +210,14 @@ export function setUpPreyPredator(preyEquation, predatorEquation) {
         return { prey, predator };
     } catch (error) {
         alert("Error setting up prey and predator: " + error.message);
-        throw error;
+        return;
     }
 }
 
 export function setUpEuler(prey, predator, initialPreyPopulation, initialPredatorPopulation, timeStep, startTime, finalTime) {
     if (finalTime <= startTime) {
         alert("Final time must be greater than start time.");
-        throw new Error("Final time must be greater than start time.");
+        return;
     }
     return new Euler(initialPreyPopulation, initialPredatorPopulation, prey, predator, timeStep, startTime, finalTime);
 }
@@ -223,7 +225,7 @@ export function setUpEuler(prey, predator, initialPreyPopulation, initialPredato
 export function setUpRungeKutta(prey, predator, initialPreyPopulation, initialPredatorPopulation, timeStep, startTime, finalTime) {
     if (finalTime <= startTime) {
         alert("Final time must be greater than start time.");
-        throw new Error("Final time must be greater than start time.");
+        return;
     }
     return new RungeKutta(initialPreyPopulation, initialPredatorPopulation, prey, predator, timeStep, startTime, finalTime);
 }

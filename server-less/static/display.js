@@ -98,6 +98,15 @@ function visualizeData(data, preyLetter, predatorLetter) {
         return;
     }
 
+    for (let i = 0; i < data.length; i++) {
+        const { time, prey_population, predator_population } = data[i];
+        if (isNaN(time) || isNaN(prey_population) || isNaN(predator_population)) {
+            alert("Error: Simulation data contains invalid values. Please check your input equations and parameters.");
+            console.error("NaN detected in simulation data at index", i, data[i]);
+            return;
+        }
+    }
+
     document.getElementById("graph-container").innerHTML = "";
 
     const scene = new THREE.Scene();
@@ -169,7 +178,7 @@ function visualizeData(data, preyLetter, predatorLetter) {
             predator_population !== 0 ? predator_population : alpha,
             prey_population !== 0 ? -prey_population : -alpha
         );
-    });
+    }).filter(p => p !== null);
 
     if (points.length === 0) {
         alert("Error: Could not generate data. Please check your inputs.");

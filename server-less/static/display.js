@@ -31,22 +31,22 @@ function runSimulation() {
     });
 
     if (isNaN(initialPreyPopulation) || isNaN(initialPredatorPopulation) || isNaN(timeStep) || isNaN(finalTime)) {
-        alert("Error: Please enter valid numbers for all inputs.");
+        showAlert("Error: Please enter valid numbers for all inputs.");
         return;
     }
 
     if (initialPreyPopulation < 0 || initialPredatorPopulation < 0) {
-        alert("Error: Initial populations cannot be negative.");
+        showAlert("Error: Initial populations cannot be negative.");
         return;
     }
 
     if (timeStep <= 0) {
-        alert("Error: Time step must be positive.");
+        showAlert("Error: Time step must be positive.");
         return;
     }
 
     if (finalTime <= startTime) {
-        alert("Error: Final time must be greater than the start time.");
+        showAlert("Error: Final time must be greater than the start time.");
         return;
     }
 
@@ -69,7 +69,7 @@ function runSimulation() {
         const result = simulation.calculatePoints();
 
         if (!result.length) {
-            alert("Simulation produced no valid results.");
+            showAlert("Simulation produced no valid results.");
             return;
         }
 
@@ -87,21 +87,20 @@ function runSimulation() {
             predatorLetter: predator.getPredatorLetter()
         };
     } catch (error) {
-        console.error("Error:", error.message);
-        alert("Error: " + error.message);
+        showAlert("Error: " + error.message);
     }
 }
 
 function visualizeData(data, preyLetter, predatorLetter) {
     if (!data || data.length === 0) {
-        alert("Error: Could not generate data. Please check your inputs.");
+        showAlert("Error: Could not generate data. Please check your inputs.");
         return;
     }
 
     for (let i = 0; i < data.length; i++) {
         const { time, prey_population, predator_population } = data[i];
         if (isNaN(time) || isNaN(prey_population) || isNaN(predator_population)) {
-            alert("Error: Simulation data contains invalid values. Please check your input equations and parameters.");
+            showAlert("Error: Simulation data contains invalid values. Please check your input equations and parameters.");
             console.error("NaN detected in simulation data at index", i, data[i]);
             return;
         }
@@ -168,7 +167,7 @@ function visualizeData(data, preyLetter, predatorLetter) {
     }
 
     if (maxPrey > beta || maxPredator > beta) {
-        alert("Error: One of the max values for prey or predator is too big for three.js to generate");
+        showAlert("Error: One of the max values for prey or predator is too big for three.js to generate");
         return;
     }
 
@@ -181,10 +180,10 @@ function visualizeData(data, preyLetter, predatorLetter) {
     }).filter(p => p !== null);
 
     if (points.length === 0) {
-        alert("Error: Could not generate data. Please check your inputs.");
+        showAlert("Error: Could not generate data. Please check your inputs.");
         return;
     } else if (points.length > beta) {
-        alert("Error: Please reduce your final time and/or increase timestep. three.js can't render that many points.");
+        showAlert("Error: Please reduce your final time and/or increase timestep. three.js can't render that many points.");
         return
     }
 
@@ -337,7 +336,7 @@ function generateData() {
     const simulationResult = runSimulation();
 
     if (!simulationResult) {
-        alert("Error: Simulation failed. No data returned.");
+        showAlert("Error: Simulation failed. No data returned.");
         return;
     }
 
@@ -349,6 +348,28 @@ function generateData() {
 
     visualizeData(simulationData, preyLetter, predatorLetter);
     printTable(simulationData, preyLetter, predatorLetter);
+}
+
+export function showAlert(message) {
+    const alertBox = document.getElementById("custom-alert");
+    const alertMessage = document.getElementById("alert-message");
+    const closeButton = document.getElementById("close-alert");
+
+    alertMessage.textContent = message;
+
+    alertBox.style.display = "flex";
+
+    closeButton.replaceWith(closeButton.cloneNode(true));
+
+    document.getElementById("close-alert").addEventListener("click", function () {
+        alertBox.style.display = "none";
+    });
+
+    alertBox.addEventListener("click", function (event) {
+        if (event.target === alertBox) {
+            alertBox.style.display = "none";
+        }
+    });
 }
 
 window.generateData = generateData;

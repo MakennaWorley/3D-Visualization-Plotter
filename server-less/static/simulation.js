@@ -1,3 +1,5 @@
+import { showAlert } from "./display.js";
+
 class Prey {
     constructor(growthRate, controlRate, preyLetter, predatorLetter) {
         this.growthRate = growthRate;
@@ -159,7 +161,7 @@ export function parseEquation(equation) {
         coefficient = coefficient === "" || coefficient === "+" ? 1.0 : coefficient === "-" ? -1.0 : parseFloat(coefficient);
 
             if (isNaN(coefficient)) {
-                alert(`Could not parse the coefficient: "${coefficient}"`);
+                showAlert(`Could not parse the coefficient: "${coefficient}"`);
                 return;
             }
 
@@ -183,14 +185,14 @@ export function parseEquation(equation) {
         }
 
         if (!preyLetter || !predatorLetter) {
-            alert("Invalid equation format. Ensure it contains prey and predator terms.");
+            showAlert("Invalid equation format. Ensure it contains prey and predator terms.");
             return;
         }
 
         console.log("Parsed values:", { growthRate, controlRate, preyLetter, predatorLetter });
         return {growthRate, controlRate, preyLetter, predatorLetter};
     } catch (error) {
-        alert("Cannot parse equation: " + equation);
+        showAlert("Cannot parse equation: " + equation);
         return;
     }
 }
@@ -209,14 +211,14 @@ export function setUpPreyPredator(preyEquation, predatorEquation) {
 
         return { prey, predator };
     } catch (error) {
-        alert("Error setting up prey and predator: " + error.message);
+        showAlert("Error setting up prey and predator: " + error.message);
         return;
     }
 }
 
 export function setUpEuler(prey, predator, initialPreyPopulation, initialPredatorPopulation, timeStep, startTime, finalTime) {
     if (finalTime <= startTime) {
-        alert("Final time must be greater than start time.");
+        showAlert("Final time must be greater than start time.");
         return;
     }
     return new Euler(initialPreyPopulation, initialPredatorPopulation, prey, predator, timeStep, startTime, finalTime);
@@ -224,7 +226,7 @@ export function setUpEuler(prey, predator, initialPreyPopulation, initialPredato
 
 export function setUpRungeKutta(prey, predator, initialPreyPopulation, initialPredatorPopulation, timeStep, startTime, finalTime) {
     if (finalTime <= startTime) {
-        alert("Final time must be greater than start time.");
+        showAlert("Final time must be greater than start time.");
         return;
     }
     return new RungeKutta(initialPreyPopulation, initialPredatorPopulation, prey, predator, timeStep, startTime, finalTime);

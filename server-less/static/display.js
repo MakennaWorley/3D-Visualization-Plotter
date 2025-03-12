@@ -1,4 +1,4 @@
-import {setUpPreyPredator, setUpEuler, setUpRungeKutta} from "./simulation.js";
+import { setUpEuler, setUpPreyPredator, setUpRungeKutta } from "./simulation.js";
 
 const alpha = 1e-6; // Lower bound limit
 const beta = 1e5; // Upper bound for points on graph
@@ -361,29 +361,19 @@ export function showAlert(message) {
 
     closeButton.replaceWith(closeButton.cloneNode(true));
 
-    let soundInterval = null;
-
     if (errorSound) {
         errorSound.volume = 1;
         errorSound.currentTime = 0;
         errorSound.play().catch(err => console.error("Error playing sound:", err));
-
-        soundInterval = setInterval(() => {
-            errorSound.currentTime = 0;
-            errorSound.play().catch(err => console.error("Error playing sound:", err));
-        }, errorSound.duration * 1000);
     }
 
     document.getElementById("close-alert").addEventListener("click", function () {
         alertBox.style.display = "none";
 
-        alert("I am 74% sure that someone will try to mess up my tool. 40% positive it will be Brynlee because she is QA" +
-            " testing which makes sense and is excusable, 24% positive it will be Andrew because he just would, and 10% Cooper" +
-            " because he's curious if this program can do everything.")
-
-        clearInterval(soundInterval);
-        errorSound.pause();
-        errorSound.currentTime = 0;
+        alert("I am 74% sure that someone will try to mess up my tool. 50% positive it will be Brynlee because she is QA" +
+            " testing which makes sense and is excusable. 24% positive it will be Andrew because he just would. 7% Cooper" +
+            " because he's curious if this program can do everything. 3% says it is someone else who may or may not be in" +
+            " the class.")
     });
 }
 

@@ -152,7 +152,7 @@ export function parseEquation(equation) {
         const termPattern = /([+-]?\d*\.?\d+|\d+|[+-])?\*?([A-Z])(?:\*?([A-Z]))?/g;
         let terms = [...equation.replace(/\s/g, "").matchAll(termPattern)];
 
-        console.log("Matched terms:", terms);
+        //console.log("Matched terms:", terms);
 
         let growthRate = 0, controlRate = 0;
         let preyLetter = null, predatorLetter = null;
@@ -189,7 +189,7 @@ export function parseEquation(equation) {
             return;
         }
 
-        console.log("Parsed values:", { growthRate, controlRate, preyLetter, predatorLetter });
+        //console.log("Parsed values:", { growthRate, controlRate, preyLetter, predatorLetter });
         return {growthRate, controlRate, preyLetter, predatorLetter};
     } catch (error) {
         showAlert("Cannot parse equation: " + equation);

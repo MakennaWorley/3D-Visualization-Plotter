@@ -286,19 +286,19 @@ function createAxes(view) {
 
 function positionCamera(view) {
     if (view === "Fronter") {
-        camera.position.set(maxPrey * 1.3, midPredator, 300);
+        camera.position.set(midPrey, midPredator, 10);
         camera.lookAt(midPrey, midPredator, 0);
         controls.target.set(midPrey, midPredator, 0);
     }
     else if (view === "Sider") {
-        camera.position.set(midTime, maxPredator * 1.2, 300);
+        camera.position.set(midTime, midPredator, 10);
         camera.lookAt(midTime, midPredator, 0);
         controls.target.set(midTime, midPredator, 0);
     }
     else if (view === "Topper") {
-        camera.position.set(midTime, 300, midPrey);
-        camera.lookAt(midTime, 0, midPrey);
-        controls.target.set(midTime, 0, midPrey);
+        camera.position.set(midTime, midPrey, 10);
+        camera.lookAt(midTime, midPrey, 0);
+        controls.target.set(midTime, midPrey, 0);
     }
     else {
         camera.position.set(-maxTime, maxPredator * 1.2, maxPrey * 0.7);
@@ -527,7 +527,6 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 document.getElementById("graph-container").addEventListener("click", function () {
-    console.log("Graph clicked");
     if (is2D) {
         switchView("3D");
     }

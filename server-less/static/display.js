@@ -1,68 +1,71 @@
-import { setUpEuler, setUpPreyPredator, setUpRungeKutta } from "./simulation.js";
+import {setUpEuler, setUpPreyPredator, setUpRungeKutta} from "./simulation.js";
 
 const alpha = 1e-6; // Lower bound limit
 const beta = 1e5; // Upper bound for points on graph
+const MAX_RENDER_POINTS = 10000;
 
-let camera = null;
-let controls = null;
-let midTime = 0;
-let midPrey = 0;
-let midPredator = 0;
-let maxTime = 0;
-let maxPrey = 0;
-let maxPredator = 0;
+let camera, controls, renderer, scene;
+let midTime, midPrey, midPredator;
+let maxTime, maxPrey, maxPredator;
+
+let is2D = false;
+let currentView = "3D";
+
+let globalSimulationData = [];
+let globalPreyLetter = "";
+let globalPredatorLetter = "";
+
+let currentLine = null;
 
 function runSimulation() {
-    const preyEquation = document.getElementById("prey_equation").value;
-    const predatorEquation = document.getElementById("predator_equation").value;
-    const initialPreyPopulation = parseFloat(document.getElementById("initial_prey").value);
-    const initialPredatorPopulation = parseFloat(document.getElementById("initial_predator").value);
-    const timeStep = parseFloat(document.getElementById("time_step").value);
-    const startTime = 0;
-    const finalTime = parseFloat(document.getElementById("final_time").value);
-
-    console.log("Running simulation with:", {
-        preyEquation,
-        predatorEquation,
-        initialPreyPopulation,
-        initialPredatorPopulation,
-        timeStep,
-        finalTime
-    });
-
-    if (isNaN(initialPreyPopulation) || isNaN(initialPredatorPopulation) || isNaN(timeStep) || isNaN(finalTime)) {
-        showAlert("Error: Please enter valid numbers for all inputs.");
-        return;
-    }
-
-    if (initialPreyPopulation < 0 || initialPredatorPopulation < 0) {
-        showAlert("Error: Initial populations cannot be negative.");
-        return;
-    }
-
-    if (timeStep <= 0) {
-        showAlert("Error: Time step must be positive.");
-        return;
-    }
-
-    if (finalTime <= startTime) {
-        showAlert("Error: Final time must be greater than the start time.");
-        return;
-    }
-
     try {
+        const preyEquation = document.getElementById("prey_equation").value;
+        const predatorEquation = document.getElementById("predator_equation").value;
+        const initialPreyPopulation = parseFloat(document.getElementById("initial_prey").value);
+        const initialPredatorPopulation = parseFloat(document.getElementById("initial_predator").value);
+        const timeStep = parseFloat(document.getElementById("time_step").value);
+        const startTime = 0;
+        const finalTime = parseFloat(document.getElementById("final_time").value);
+
+        /*console.log("Running simulation with:", {
+            preyEquation,
+            predatorEquation,
+            initialPreyPopulation,
+            initialPredatorPopulation,
+            timeStep,
+            finalTime
+        });*/
+
+        if ([initialPreyPopulation, initialPredatorPopulation, timeStep, finalTime].some(isNaN)) {
+            showAlert("Error: Please enter valid numbers for all inputs.");
+            return;
+        }
+
+        if (initialPreyPopulation < 0 || initialPredatorPopulation < 0) {
+            showAlert("Error: Initial populations cannot be negative.");
+            return;
+        }
+
+        if (timeStep <= 0) {
+            showAlert("Error: Time step must be positive.");
+            return;
+        }
+
+        if (finalTime <= startTime) {
+            showAlert("Error: Final time must be greater than the start time.");
+            return;
+        }
+
         const {prey, predator} = setUpPreyPredator(preyEquation, predatorEquation);
 
-        console.log(prey, predator)
+        //console.log(prey, predator)
 
         const method = document.querySelector('input[name="method"]:checked').value;
-        let simulation;
-
-        if (method === "runge-kutta") {
-            simulation = setUpRungeKutta(prey, predator, initialPreyPopulation, initialPredatorPopulation, timeStep, startTime, finalTime);
-        } else {
-            simulation = setUpEuler(prey, predator, initialPreyPopulation, initialPredatorPopulation, timeStep, startTime, finalTime);
-        }
+        let simulation = (
+            method === "runge-kutta"
+                ? setUpRungeKutta
+                : setUpEuler
+        )(prey, predator, initialPreyPopulation, initialPredatorPopulation, timeStep, startTime, finalTime);
 
         //console.log(simulation)
 
@@ -73,57 +76,39 @@ function runSimulation() {
             return;
         }
 
-        const simulationData = result.map(([time, preyPopulation, dPrey, predatorPopulation, dPredator]) => ({
-            time,
-            prey_population: preyPopulation,
-            d_prey: dPrey,
-            predator_population: predatorPopulation,
-            d_predator: dPredator
-        }));
-
         return {
-            simulationData,
+            simulationData: result.map(([time, preyPopulation, dPrey, predatorPopulation, dPredator]) => ({
+                time,
+                prey_population: preyPopulation,
+                d_prey: dPrey,
+                predator_population: predatorPopulation,
+                d_predator: dPredator
+            })),
             preyLetter: prey.getPreyLetter(),
             predatorLetter: predator.getPredatorLetter()
         };
     } catch (error) {
-        showAlert("Error: " + error.message);
+        showAlert(error.message);
     }
 }
 
-function visualizeData(data, preyLetter, predatorLetter) {
+function visualizeData(data, preyLetter, predatorLetter, selectedView = "3D") {
     if (!data || data.length === 0) {
         showAlert("Error: Could not generate data. Please check your inputs.");
         return;
     }
 
-    for (let i = 0; i < data.length; i++) {
-        const {time, prey_population, predator_population} = data[i];
-        if (isNaN(time) || isNaN(prey_population) || isNaN(predator_population)) {
-            showAlert("Error: Simulation data contains invalid values. Please check your input equations and parameters.");
-            console.error("NaN detected in simulation data at index", i, data[i]);
-            return;
-        }
-    }
-
     document.getElementById("graph-container").innerHTML = "";
 
-    const scene = new THREE.Scene();
+    scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000000);
 
-    let renderer = null;
     let initialWidth = window.innerWidth;
 
     if (initialWidth <= 800) {
         camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
         renderer = new THREE.WebGLRenderer();
-
-        if (!renderer) {
-            console.error("THREE.js renderer failed to initialize.");
-            return;
-        }
-
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.getElementById("graph-container").appendChild(renderer.domElement);
     } else {
@@ -154,16 +139,15 @@ function visualizeData(data, preyLetter, predatorLetter) {
     maxPrey = Math.max(1, ...data.map(d => d.prey_population));
     maxPredator = Math.max(1, ...data.map(d => d.predator_population));
 
+    midTime = maxTime / 2;
+    midPrey = maxPrey / 2;
+    midPredator = maxPredator / 2;
+
     //console.log("Max Values - Time:", maxTime, "Prey:", maxPrey, "Predator:", maxPredator);
 
-    if (maxTime > 0) {
-        midTime = maxTime / 2;
-    }
-    if (maxPrey > 0) {
-        midPrey = maxPrey / 2;
-    }
-    if (maxPredator > 0) {
-        midPredator = maxPredator / 2;
+    if (data.length > MAX_RENDER_POINTS) {
+        showAlert("Too many data points. Consider reducing final time or increasing time step.");
+        return;
     }
 
     if (maxPrey > beta || maxPredator > beta) {
@@ -171,15 +155,9 @@ function visualizeData(data, preyLetter, predatorLetter) {
         return;
     }
 
-    const points = data.map(({time, prey_population, predator_population}) => {
-        return new THREE.Vector3(
-            time,
-            predator_population !== 0 ? predator_population : alpha,
-            prey_population !== 0 ? -prey_population : -alpha
-        );
-    }).filter(p => p !== null);
+    const points = getPointsForView(selectedView, data);
 
-    if (points.length === 0) {
+    if (!points.length) {
         showAlert("Error: Could not generate data. Please check your inputs.");
         return;
     } else if (points.length > beta) {
@@ -188,49 +166,14 @@ function visualizeData(data, preyLetter, predatorLetter) {
     }
 
     const geometry = new THREE.BufferGeometry().setFromPoints(points);
-    const material = new THREE.LineBasicMaterial({color: 0xffffff, linewidth: 2});
-    const line = new THREE.Line(geometry, material);
-    scene.add(line);
+    scene.add(new THREE.Line(geometry, new THREE.LineBasicMaterial({ color: 0xffffff })));
 
-    function createAxis(start, end, color) {
-        const points = [new THREE.Vector3(...start), new THREE.Vector3(...end)];
-        const axisGeometry = new THREE.BufferGeometry().setFromPoints(points);
-        const axisMaterial = new THREE.LineBasicMaterial({color, linewidth: 10});
-        const axisLine = new THREE.Line(axisGeometry, axisMaterial);
-        scene.add(axisLine);
-    }
-
-    createAxis([0, 0, 0], [maxTime, 0, 0], 0xff0000);       // Time
-    createAxis([0, 0, 0], [0, maxPredator, 0], 0x0000ff);   // Predator
-    createAxis([0, 0, 0], [0, 0, -maxPrey], 0x00ff00);      // Prey
-
-    function createLabel(text, position) {
-        const div = document.createElement("div");
-        div.className = "label";
-        div.textContent = text;
-        div.style.color = "white";
-        div.style.fontSize = "14px";
-        div.style.fontWeight = "bold";
-        div.style.padding = "5px";
-        div.style.background = "rgba(0, 0, 0, 0.5)";
-
-        const label = new THREE.CSS2DObject(div);
-        label.position.set(position.x, position.y, position.z);
-        scene.add(label);
-        return label;
-    }
-
-    createLabel("Time", new THREE.Vector3(maxTime, 0, 0));
-    createLabel(predatorLetter, new THREE.Vector3(0, maxPredator, 0));
-    createLabel(preyLetter, new THREE.Vector3(0, 0, -maxPrey));
-
-    camera.position.set(maxTime * -1, maxPredator * 1.2, maxPrey * 0.7);
-    camera.lookAt(midTime, midPredator, -midPrey);
-    controls.target.set(midTime, midPredator, -midPrey);
+    createAxes(selectedView);
+    positionCamera(selectedView);
 
     function animate() {
         requestAnimationFrame(animate);
-        controls.update();
+        if (controls) controls.update();
         renderer.render(scene, camera);
         labelRenderer.render(scene, camera);
     }
@@ -249,7 +192,141 @@ function visualizeData(data, preyLetter, predatorLetter) {
     });
 }
 
-function setCameraView(view) {
+function getPointsForView(view, data) {
+    return data.map(({time, prey_population, predator_population}) => {
+        switch (view) {
+            case "Fronter":  // Prey vs Predator
+                return new THREE.Vector3(
+                    prey_population !== 0 ? prey_population : alpha,
+                    predator_population !== 0 ? predator_population : alpha,
+                    0
+                );
+            case "Sider":  // Predator vs Time
+                return new THREE.Vector3(
+                    time,
+                    predator_population !== 0 ? predator_population : alpha,
+                    0
+                );
+            case "Topper":  // Prey vs Time
+                return new THREE.Vector3(
+                    time,
+                    prey_population !== 0 ? prey_population : alpha,
+                    0
+                );
+            default:
+                return new THREE.Vector3(
+                    time,
+                    predator_population !== 0 ? predator_population : alpha,
+                    prey_population !== 0 ? -prey_population : -alpha
+                );
+        }
+    }).filter(p => p !== null);
+}
+
+function createAxes(view) {
+    function createAxis(start, end, color) {
+        const points = [new THREE.Vector3(...start), new THREE.Vector3(...end)];
+        const axisGeometry = new THREE.BufferGeometry().setFromPoints(points);
+        const axisMaterial = new THREE.LineBasicMaterial({ color });
+        const axisLine = new THREE.Line(axisGeometry, axisMaterial);
+        scene.add(axisLine);
+    }
+
+    function createLabel(text, position) {
+        const div = document.createElement("div");
+        div.className = "label";
+        div.textContent = text;
+        div.style.color = "white";
+        div.style.fontSize = "14px";
+        div.style.fontWeight = "bold";
+        div.style.padding = "5px";
+        div.style.background = "rgba(0, 0, 0, 0.5)";
+
+        const label = new THREE.CSS2DObject(div);
+        label.position.set(position.x, position.y, position.z);
+        scene.add(label);
+        return label;
+    }
+
+    if (view === "Fronter") {
+        // X = Prey, Y = Predator
+        createAxis([0,0,0], [maxPrey,0,0], 0x00ff00);      // Prey axis
+        createAxis([0,0,0], [0,maxPredator,0], 0x0000ff);  // Predator axis
+
+        createLabel(globalPreyLetter, new THREE.Vector3(maxPrey,0,0));
+        createLabel(globalPredatorLetter, new THREE.Vector3(0,maxPredator,0));
+    }
+    else if (view === "Sider") {
+        // X = Time, Y = Predator
+        createAxis([0,0,0], [maxTime,0,0], 0xff0000);      // Time axis
+        createAxis([0,0,0], [0,maxPredator,0], 0x0000ff);  // Predator axis
+
+        createLabel("Time", new THREE.Vector3(maxTime,0,0));
+        createLabel(globalPredatorLetter, new THREE.Vector3(0,maxPredator,0));
+    }
+    else if (view === "Topper") {
+        // X = Time, Y = Prey
+        createAxis([0,0,0], [maxTime,0,0], 0xff0000);      // Time axis
+        createAxis([0,0,0], [0,maxPrey,0], 0x00ff00);       // Prey axis
+
+        createLabel("Time", new THREE.Vector3(maxTime,0,0));
+        createLabel(globalPreyLetter, new THREE.Vector3(0,maxPrey,0));
+    }
+    else {
+        // 3D axes: X = Time, Y = Predator, Z = -Prey
+        createAxis([0, 0, 0], [maxTime, 0, 0], 0xff0000);       // Time
+        createAxis([0, 0, 0], [0, maxPredator, 0], 0x0000ff);   // Predator
+        createAxis([0, 0, 0], [0, 0, -maxPrey], 0x00ff00);      // Prey
+
+        createLabel("Time", new THREE.Vector3(maxTime,0,0));
+        createLabel(globalPredatorLetter, new THREE.Vector3(0,maxPredator,0));
+        createLabel(globalPreyLetter, new THREE.Vector3(0,0,-maxPrey));
+    }
+}
+
+function positionCamera(view) {
+    if (view === "Fronter") {
+        camera.position.set(midPrey, midPredator, 10);
+        camera.lookAt(midPrey, midPredator, 0);
+        controls.target.set(midPrey, midPredator, 0);
+    }
+    else if (view === "Sider") {
+        camera.position.set(midTime, midPredator, 10);
+        camera.lookAt(midTime, midPredator, 0);
+        controls.target.set(midTime, midPredator, 0);
+    }
+    else if (view === "Topper") {
+        camera.position.set(midTime, midPrey, 10);
+        camera.lookAt(midTime, midPrey, 0);
+        controls.target.set(midTime, midPrey, 0);
+    }
+    else {
+        camera.position.set(-maxTime, maxPredator * 1.2, maxPrey * 0.7);
+        camera.lookAt(midTime, midPredator, -midPrey);
+        controls.target.set(midTime, midPredator, -midPrey);
+    }
+    controls.update();
+}
+
+function switchView(newView) {
+    if (!globalSimulationData.length) {
+        console.warn("No simulation data available yet.");
+        return;
+    }
+
+    currentView = newView;
+
+    if (newView === "3D") {
+        is2D = false;
+    } else {
+        is2D = true;
+    }
+
+    document.getElementById("graph-container").innerHTML = "";
+    visualizeData(globalSimulationData, globalPreyLetter, globalPredatorLetter, newView);
+}
+
+/*function setCameraView(view) {
     if (!camera || !controls) {
         console.warn("Camera or controls are not initialized yet.");
         return;
@@ -260,11 +337,10 @@ function setCameraView(view) {
         return;
     }
 
+    is2D = true;  // Set 2D mode when switching to a flattened view
+
     switch (view) {
-        case "Angler":
-            camera.position.set(maxTime * -1, maxPredator * 1.2, maxPrey * 0.7);
-            break;
-        case "Fronter":
+        case "Fronter": // Flattens the time axis
             camera.position.set(2 * maxTime, midPredator, -midPrey);
             break;
         case "Sider":
@@ -275,12 +351,15 @@ function setCameraView(view) {
             break;
         default:
             console.warn("Invalid view specified. Falling back to a distant perspective.");
-            camera.position.set(2 * maxTime, 2 * maxPredator, -2 * maxPrey);
+            camera.position.set(maxTime * -1, maxPredator * 1.2, maxPrey * 0.7);
+            is2D = false;
             break;
     }
 
+    camera.lookAt(midTime, midPredator, -midPrey);
+    controls.target.set(midTime, midPredator, -midPrey);
     controls.update();
-}
+}*/
 
 function observeInnerWidth(callback) {
     callback(window.innerWidth);
@@ -346,8 +425,13 @@ function generateData() {
 
     //console.log("Calling visualizeData with:", simulationData);
 
-    visualizeData(simulationData, preyLetter, predatorLetter);
-    printTable(simulationData, preyLetter, predatorLetter);
+    globalSimulationData = simulationData;
+    globalPreyLetter = preyLetter;
+    globalPredatorLetter = predatorLetter;
+
+    currentView = "3D";
+    visualizeData(globalSimulationData, globalPreyLetter, globalPredatorLetter, currentView);
+    printTable(globalSimulationData, globalPreyLetter, globalPredatorLetter);
 }
 
 export function showAlert(message) {
@@ -378,7 +462,7 @@ export function showAlert(message) {
 }
 
 window.generateData = generateData;
-window.setCameraView = setCameraView;
+window.setCameraView = switchView;
 window.observeInnerWidth = observeInnerWidth;
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -425,11 +509,7 @@ document.addEventListener("DOMContentLoaded", function () {
     toggleButtonUI.addEventListener("click", function () {
         uiPanel.classList.toggle("collapsed");
 
-        if (uiPanel.classList.contains("collapsed")) {
-            toggleButtonUI.innerHTML = "▼";
-        } else {
-            toggleButtonUI.innerHTML = "▲";
-        }
+        toggleButtonUI.innerHTML = uiPanel.classList.contains("collapsed") ? "▼" : "▲";
         updateUIPanelScrolling();
     });
 
@@ -444,4 +524,10 @@ document.addEventListener("DOMContentLoaded", function () {
             toggleButtonTable.innerHTML = "◀";
         }
     });
+});
+
+document.getElementById("graph-container").addEventListener("click", function () {
+    if (is2D) {
+        switchView("3D");
+    }
 });

@@ -305,15 +305,12 @@ function switchView(newView) {
     }
 
     currentView = newView;
-
-    if (newView === "3D") {
-        is2D = false;
-    } else {
-        is2D = true;
-    }
+    is2D = (newView !== "3D");
 
     document.getElementById("graph-container").innerHTML = "";
     visualizeData(globalSimulationData, globalPreyLetter, globalPredatorLetter, newView);
+
+    document.getElementById("return-to-3d").style.display = is2D ? "block" : "none";
 }
 
 function observeInnerWidth(callback) {
@@ -494,10 +491,8 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-document.getElementById("graph-container").addEventListener("click", function () {
-    if (is2D) {
-        switchView("3D");
-    }
+document.getElementById("return-to-3d").addEventListener("click", () => {
+    switchView("3D");
 });
 
 helpIcon.addEventListener("click", () => {

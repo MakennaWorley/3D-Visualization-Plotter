@@ -112,6 +112,21 @@ button:hover {
     display: none;
 }
 
+#return-to-3d {
+    position: absolute;
+    top: 20px;
+    right: 70px;
+    background: none;
+    color: black;
+    font-size: 20px;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    z-index: 4;
+    display: none;
+    transform: rotate(0deg);
+}
+
 #dataTable {
     margin-top: 20px;
     overflow-x: auto;
@@ -443,6 +458,16 @@ button:hover {
     }
 
     .table-open #toggle-table {
+        color: black;
+    }
+
+    #return-to-3d {
+        top: 100px;
+        right: 70px;
+        color: #8500ff;
+    }
+
+    .table-open #return-to-3d {
         color: black;
     }
 }

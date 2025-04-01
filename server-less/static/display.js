@@ -1,5 +1,9 @@
 import {setUpEuler, setUpPreyPredator, setUpRungeKutta} from "./simulation.js";
 
+const helpIcon = document.getElementById("help-icon");
+const helpModal = document.getElementById("help-modal");
+const closeHelp = document.getElementById("close-help");
+
 const alpha = 1e-6; // Lower bound limit
 const beta = 1e5; // Upper bound for points on graph
 const MAX_RENDER_POINTS = 10000;
@@ -158,7 +162,7 @@ function visualizeData(data, preyLetter, predatorLetter, selectedView = "3D") {
     }
 
     const geometry = new THREE.BufferGeometry().setFromPoints(points);
-    scene.add(new THREE.Line(geometry, new THREE.LineBasicMaterial({ color: 0xffffff })));
+    scene.add(new THREE.Line(geometry, new THREE.LineBasicMaterial({color: 0xffffff})));
 
     createAxes(selectedView);
     positionCamera(selectedView);
@@ -219,7 +223,7 @@ function createAxes(view) {
     function createAxis(start, end, color) {
         const points = [new THREE.Vector3(...start), new THREE.Vector3(...end)];
         const axisGeometry = new THREE.BufferGeometry().setFromPoints(points);
-        const axisMaterial = new THREE.LineBasicMaterial({ color });
+        const axisMaterial = new THREE.LineBasicMaterial({color});
         const axisLine = new THREE.Line(axisGeometry, axisMaterial);
         scene.add(axisLine);
     }
@@ -242,37 +246,34 @@ function createAxes(view) {
 
     if (view === "Fronter") {
         // X = Prey, Y = Predator
-        createAxis([0,0,0], [maxPrey,0,0], 0x00ff00);      // Prey axis
-        createAxis([0,0,0], [0,maxPredator,0], 0x0000ff);  // Predator axis
+        createAxis([0, 0, 0], [maxPrey, 0, 0], 0x00ff00);      // Prey axis
+        createAxis([0, 0, 0], [0, maxPredator, 0], 0x0000ff);  // Predator axis
 
-        createLabel(globalPreyLetter, new THREE.Vector3(maxPrey,0,0));
-        createLabel(globalPredatorLetter, new THREE.Vector3(0,maxPredator,0));
-    }
-    else if (view === "Sider") {
+        createLabel(globalPreyLetter, new THREE.Vector3(maxPrey, 0, 0));
+        createLabel(globalPredatorLetter, new THREE.Vector3(0, maxPredator, 0));
+    } else if (view === "Sider") {
         // X = Time, Y = Predator
-        createAxis([0,0,0], [maxTime,0,0], 0xff0000);      // Time axis
-        createAxis([0,0,0], [0,maxPredator,0], 0x0000ff);  // Predator axis
+        createAxis([0, 0, 0], [maxTime, 0, 0], 0xff0000);      // Time axis
+        createAxis([0, 0, 0], [0, maxPredator, 0], 0x0000ff);  // Predator axis
 
-        createLabel("Time", new THREE.Vector3(maxTime,0,0));
-        createLabel(globalPredatorLetter, new THREE.Vector3(0,maxPredator,0));
-    }
-    else if (view === "Topper") {
+        createLabel("Time", new THREE.Vector3(maxTime, 0, 0));
+        createLabel(globalPredatorLetter, new THREE.Vector3(0, maxPredator, 0));
+    } else if (view === "Topper") {
         // X = Time, Y = Prey
-        createAxis([0,0,0], [maxTime,0,0], 0xff0000);      // Time axis
-        createAxis([0,0,0], [0,maxPrey,0], 0x00ff00);       // Prey axis
+        createAxis([0, 0, 0], [maxTime, 0, 0], 0xff0000);      // Time axis
+        createAxis([0, 0, 0], [0, maxPrey, 0], 0x00ff00);       // Prey axis
 
-        createLabel("Time", new THREE.Vector3(maxTime,0,0));
-        createLabel(globalPreyLetter, new THREE.Vector3(0,maxPrey,0));
-    }
-    else {
+        createLabel("Time", new THREE.Vector3(maxTime, 0, 0));
+        createLabel(globalPreyLetter, new THREE.Vector3(0, maxPrey, 0));
+    } else {
         // 3D axes: X = Time, Y = Predator, Z = -Prey
         createAxis([0, 0, 0], [maxTime, 0, 0], 0xff0000);       // Time
         createAxis([0, 0, 0], [0, maxPredator, 0], 0x0000ff);   // Predator
         createAxis([0, 0, 0], [0, 0, -maxPrey], 0x00ff00);      // Prey
 
-        createLabel("Time", new THREE.Vector3(maxTime,0,0));
-        createLabel(globalPredatorLetter, new THREE.Vector3(0,maxPredator,0));
-        createLabel(globalPreyLetter, new THREE.Vector3(0,0,-maxPrey));
+        createLabel("Time", new THREE.Vector3(maxTime, 0, 0));
+        createLabel(globalPredatorLetter, new THREE.Vector3(0, maxPredator, 0));
+        createLabel(globalPreyLetter, new THREE.Vector3(0, 0, -maxPrey));
     }
 }
 
@@ -281,18 +282,15 @@ function positionCamera(view) {
         camera.position.set(midPrey, midPredator, 10);
         camera.lookAt(midPrey, midPredator, 0);
         controls.target.set(midPrey, midPredator, 0);
-    }
-    else if (view === "Sider") {
+    } else if (view === "Sider") {
         camera.position.set(midTime, midPredator, 10);
         camera.lookAt(midTime, midPredator, 0);
         controls.target.set(midTime, midPredator, 0);
-    }
-    else if (view === "Topper") {
+    } else if (view === "Topper") {
         camera.position.set(midTime, midPrey, 10);
         camera.lookAt(midTime, midPrey, 0);
         controls.target.set(midTime, midPrey, 0);
-    }
-    else {
+    } else {
         camera.position.set(-maxTime, maxPredator * 1.2, maxPrey * 0.7);
         camera.lookAt(midTime, midPredator, -midPrey);
         controls.target.set(midTime, midPredator, -midPrey);
@@ -501,3 +499,19 @@ document.getElementById("graph-container").addEventListener("click", function ()
         switchView("3D");
     }
 });
+
+helpIcon.addEventListener("click", () => {
+    helpModal.style.display = "flex";
+});
+
+helpIcon.addEventListener("touchstart", () => {
+    helpModal.style.display = "flex";
+});
+
+closeHelp.addEventListener("click", () => {
+    helpModal.style.display = "none";
+});
+
+helpIcon.addEventListener("click", openHelpModal);
+helpIcon.addEventListener("touchstart", openHelpModal);
+closeHelp.addEventListener("click", closeHelpModal);

@@ -388,26 +388,14 @@ export function showAlert(message) {
     const alertBox = document.getElementById("custom-alert");
     const alertMessage = document.getElementById("alert-message");
     const closeButton = document.getElementById("close-alert");
-    const errorSound = document.getElementById("error-sound");
 
     alertMessage.textContent = message;
     alertBox.style.display = "flex";
 
     closeButton.replaceWith(closeButton.cloneNode(true));
 
-    if (errorSound) {
-        errorSound.volume = 1;
-        errorSound.currentTime = 0;
-        errorSound.play().catch(err => console.error("Error playing sound:", err));
-    }
-
     document.getElementById("close-alert").addEventListener("click", function () {
         alertBox.style.display = "none";
-
-        alert("I am 74% sure that someone will try to mess up my tool. 50% positive it will be Brynlee because she is QA" +
-            " testing which makes sense and is excusable. 24% positive it will be Andrew because he just would. 17% Cooper" +
-            " because he's curious if this program can do everything. 6% positive it will be Lauren because I gave her an" +
-            " information hazard. And 3% says it is someone else who may or may not be in the class.")
     });
 }
 
@@ -415,18 +403,11 @@ export function showWarning(message) {
     const warningBox = document.getElementById("custom-warning");
     const warningMessage = document.getElementById("warning-message");
     const closeButton = document.getElementById("close-warning");
-    const warningSound = document.getElementById("warning-sound");
 
     warningMessage.textContent = message;
     warningBox.style.display = "flex";
 
     closeButton.replaceWith(closeButton.cloneNode(true));
-
-    if (warningSound) {
-        warningSound.volume = 1;
-        warningSound.currentTime = 0;
-        warningSound.play().catch(err => console.error("Error playing sound:", err));
-    }
 
     document.getElementById("close-warning").addEventListener("click", function () {
         warningBox.style.display = "none";

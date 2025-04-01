@@ -15,7 +15,7 @@ let globalSimulationData = [];
 let globalPreyLetter = "";
 let globalPredatorLetter = "";
 
-let currentLine = null;
+let error = false;
 
 function runSimulation() {
     try {
@@ -27,38 +27,31 @@ function runSimulation() {
         const startTime = 0;
         const finalTime = parseFloat(document.getElementById("final_time").value);
 
-        /*console.log("Running simulation with:", {
-            preyEquation,
-            predatorEquation,
-            initialPreyPopulation,
-            initialPredatorPopulation,
-            timeStep,
-            finalTime
-        });*/
-
         if ([initialPreyPopulation, initialPredatorPopulation, timeStep, finalTime].some(isNaN)) {
             showAlert("Error: Please enter valid numbers for all inputs.");
+            error = true;
             return;
         }
 
         if (initialPreyPopulation < 0 || initialPredatorPopulation < 0) {
             showAlert("Error: Initial populations cannot be negative.");
+            error = true;
             return;
         }
 
         if (timeStep <= 0) {
             showAlert("Error: Time step must be positive.");
+            error = true;
             return;
         }
 
         if (finalTime <= startTime) {
             showAlert("Error: Final time must be greater than the start time.");
+            error = true;
             return;
         }
 
         const {prey, predator} = setUpPreyPredator(preyEquation, predatorEquation);
-
-        //console.log(prey, predator)
 
         const method = document.querySelector('input[name="method"]:checked').value;
         let simulation = (
@@ -67,12 +60,11 @@ function runSimulation() {
                 : setUpEuler
         )(prey, predator, initialPreyPopulation, initialPredatorPopulation, timeStep, startTime, finalTime);
 
-        //console.log(simulation)
-
         const result = simulation.calculatePoints();
 
         if (!result.length) {
             showAlert("Simulation produced no valid results.");
+            error = true;
             return;
         }
 
@@ -94,7 +86,9 @@ function runSimulation() {
 
 function visualizeData(data, preyLetter, predatorLetter, selectedView = "3D") {
     if (!data || data.length === 0) {
-        showAlert("Error: Could not generate data. Please check your inputs.");
+        if (!error) {
+            showAlert("Error: Could not generate data. Please check your inputs.");
+        }
         return;
     }
 
@@ -142,8 +136,6 @@ function visualizeData(data, preyLetter, predatorLetter, selectedView = "3D") {
     midTime = maxTime / 2;
     midPrey = maxPrey / 2;
     midPredator = maxPredator / 2;
-
-    //console.log("Max Values - Time:", maxTime, "Prey:", maxPrey, "Predator:", maxPredator);
 
     if (data.length > MAX_RENDER_POINTS) {
         showAlert("Too many data points. Consider reducing final time or increasing time step.");
@@ -326,41 +318,6 @@ function switchView(newView) {
     visualizeData(globalSimulationData, globalPreyLetter, globalPredatorLetter, newView);
 }
 
-/*function setCameraView(view) {
-    if (!camera || !controls) {
-        console.warn("Camera or controls are not initialized yet.");
-        return;
-    }
-
-    if (midTime === null || midPrey === null || midPredator === null) {
-        console.warn("Simulation data is not initialized yet.");
-        return;
-    }
-
-    is2D = true;  // Set 2D mode when switching to a flattened view
-
-    switch (view) {
-        case "Fronter": // Flattens the time axis
-            camera.position.set(2 * maxTime, midPredator, -midPrey);
-            break;
-        case "Sider":
-            camera.position.set(midTime, midPredator, 3 * maxPrey);
-            break;
-        case "Topper":
-            camera.position.set(midTime, 3 * maxPredator, -midPrey);
-            break;
-        default:
-            console.warn("Invalid view specified. Falling back to a distant perspective.");
-            camera.position.set(maxTime * -1, maxPredator * 1.2, maxPrey * 0.7);
-            is2D = false;
-            break;
-    }
-
-    camera.lookAt(midTime, midPredator, -midPrey);
-    controls.target.set(midTime, midPredator, -midPrey);
-    controls.update();
-}*/
-
 function observeInnerWidth(callback) {
     callback(window.innerWidth);
     window.addEventListener('resize', () => {
@@ -415,15 +372,13 @@ function generateData() {
     const simulationResult = runSimulation();
 
     if (!simulationResult) {
-        showAlert("Error: Simulation failed. No data returned.");
+        if (!error) {
+            showAlert("Error: Simulation failed. No data returned.");
+        }
         return;
     }
 
-    //console.log("Simulation result:", simulationResult);
-
     const {simulationData, preyLetter, predatorLetter} = simulationResult;
-
-    //console.log("Calling visualizeData with:", simulationData);
 
     globalSimulationData = simulationData;
     globalPreyLetter = preyLetter;
@@ -455,9 +410,24 @@ export function showAlert(message) {
         alertBox.style.display = "none";
 
         alert("I am 74% sure that someone will try to mess up my tool. 50% positive it will be Brynlee because she is QA" +
-            " testing which makes sense and is excusable. 24% positive it will be Andrew because he just would. 7% Cooper" +
-            " because he's curious if this program can do everything. 3% says it is someone else who may or may not be in" +
-            " the class.")
+            " testing which makes sense and is excusable. 24% positive it will be Andrew because he just would. 17% Cooper" +
+            " because he's curious if this program can do everything. 6% positive it will be Lauren because I gave her an" +
+            " information hazard. And 3% says it is someone else who may or may not be in the class.")
+    });
+}
+
+export function showWarning(message) {
+    const warningBox = document.getElementById("custom-warning");
+    const warningMessage = document.getElementById("warning-message");
+    const closeButton = document.getElementById("close-warning");
+
+    warningMessage.textContent = message;
+    warningBox.style.display = "flex";
+
+    closeButton.replaceWith(closeButton.cloneNode(true));
+
+    document.getElementById("close-warning").addEventListener("click", function () {
+        warningBox.style.display = "none";
     });
 }
 

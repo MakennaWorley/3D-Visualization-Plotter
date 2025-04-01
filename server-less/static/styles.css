@@ -175,7 +175,7 @@ button:hover {
     background-color: #ddd;
 }
 
-.modal {
+.modal-error {
     display: none;
     position: fixed;
     z-index: 1000;
@@ -188,7 +188,7 @@ button:hover {
     justify-content: center;
 }
 
-.modal-content {
+.modal-error-content {
     background-color: white;
     padding: 20px;
     border-radius: 8px;
@@ -199,7 +199,7 @@ button:hover {
 }
 
 #close-alert {
-    background: #452ee4;
+    background: #e42e2e;
     color: white;
     border: none;
     padding: 10px 20px;
@@ -209,6 +209,43 @@ button:hover {
 }
 
 #close-alert:hover {
+    background: #911212;
+}
+
+.modal-warning {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-warning-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    width: 80%;
+    max-width: 400px;
+}
+
+#close-warning {
+    background: #452ee4;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    margin-top: 10px;
+    width: 100%;
+}
+
+ #close-warning:hover {
     background: #241291;
 }
 

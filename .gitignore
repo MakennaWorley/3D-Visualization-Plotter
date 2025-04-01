@@ -36,3 +36,4 @@ venv.bak/
 *.DS_Store
 server-less/translate_code.py
 server-less/static/a.mp3
+server-less/static/b.mp3

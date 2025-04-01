@@ -415,11 +415,18 @@ export function showWarning(message) {
     const warningBox = document.getElementById("custom-warning");
     const warningMessage = document.getElementById("warning-message");
     const closeButton = document.getElementById("close-warning");
+    const warningSound = document.getElementById("warning-sound");
 
     warningMessage.textContent = message;
     warningBox.style.display = "flex";
 
     closeButton.replaceWith(closeButton.cloneNode(true));
+
+    if (warningSound) {
+        warningSound.volume = 1;
+        warningSound.currentTime = 0;
+        warningSound.play().catch(err => console.error("Error playing sound:", err));
+    }
 
     document.getElementById("close-warning").addEventListener("click", function () {
         warningBox.style.display = "none";

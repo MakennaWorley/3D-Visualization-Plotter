@@ -1,5 +1,9 @@
 import {setUpEuler, setUpPreyPredator, setUpRungeKutta} from "./simulation.js";
 
+const helpIcon = document.getElementById("help-icon");
+const helpModal = document.getElementById("help-modal");
+const closeHelp = document.getElementById("close-help");
+
 const alpha = 1e-6; // Lower bound limit
 const beta = 1e5; // Upper bound for points on graph
 const MAX_RENDER_POINTS = 10000;
@@ -15,7 +19,7 @@ let globalSimulationData = [];
 let globalPreyLetter = "";
 let globalPredatorLetter = "";
 
-let currentLine = null;
+let error = false;
 
 function runSimulation() {
     try {
@@ -27,38 +31,31 @@ function runSimulation() {
         const startTime = 0;
         const finalTime = parseFloat(document.getElementById("final_time").value);
 
-        /*console.log("Running simulation with:", {
-            preyEquation,
-            predatorEquation,
-            initialPreyPopulation,
-            initialPredatorPopulation,
-            timeStep,
-            finalTime
-        });*/
-
         if ([initialPreyPopulation, initialPredatorPopulation, timeStep, finalTime].some(isNaN)) {
             showAlert("Error: Please enter valid numbers for all inputs.");
+            error = true;
             return;
         }
 
         if (initialPreyPopulation < 0 || initialPredatorPopulation < 0) {
             showAlert("Error: Initial populations cannot be negative.");
+            error = true;
             return;
         }
 
         if (timeStep <= 0) {
             showAlert("Error: Time step must be positive.");
+            error = true;
             return;
         }
 
         if (finalTime <= startTime) {
             showAlert("Error: Final time must be greater than the start time.");
+            error = true;
             return;
         }
 
         const {prey, predator} = setUpPreyPredator(preyEquation, predatorEquation);
-
-        //console.log(prey, predator)
 
         const method = document.querySelector('input[name="method"]:checked').value;
         let simulation = (
@@ -67,12 +64,11 @@ function runSimulation() {
                 : setUpEuler
         )(prey, predator, initialPreyPopulation, initialPredatorPopulation, timeStep, startTime, finalTime);
 
-        //console.log(simulation)
-
         const result = simulation.calculatePoints();
 
         if (!result.length) {
             showAlert("Simulation produced no valid results.");
+            error = true;
             return;
         }
 
@@ -94,7 +90,9 @@ function runSimulation() {
 
 function visualizeData(data, preyLetter, predatorLetter, selectedView = "3D") {
     if (!data || data.length === 0) {
-        showAlert("Error: Could not generate data. Please check your inputs.");
+        if (!error) {
+            showAlert("Error: Could not generate data. Please check your inputs.");
+        }
         return;
     }
 
@@ -143,8 +141,6 @@ function visualizeData(data, preyLetter, predatorLetter, selectedView = "3D") {
     midPrey = maxPrey / 2;
     midPredator = maxPredator / 2;
 
-    //console.log("Max Values - Time:", maxTime, "Prey:", maxPrey, "Predator:", maxPredator);
-
     if (data.length > MAX_RENDER_POINTS) {
         showAlert("Too many data points. Consider reducing final time or increasing time step.");
         return;
@@ -166,7 +162,7 @@ function visualizeData(data, preyLetter, predatorLetter, selectedView = "3D") {
     }
 
     const geometry = new THREE.BufferGeometry().setFromPoints(points);
-    scene.add(new THREE.Line(geometry, new THREE.LineBasicMaterial({ color: 0xffffff })));
+    scene.add(new THREE.Line(geometry, new THREE.LineBasicMaterial({color: 0xffffff})));
 
     createAxes(selectedView);
     positionCamera(selectedView);
@@ -227,7 +223,7 @@ function createAxes(view) {
     function createAxis(start, end, color) {
         const points = [new THREE.Vector3(...start), new THREE.Vector3(...end)];
         const axisGeometry = new THREE.BufferGeometry().setFromPoints(points);
-        const axisMaterial = new THREE.LineBasicMaterial({ color });
+        const axisMaterial = new THREE.LineBasicMaterial({color});
         const axisLine = new THREE.Line(axisGeometry, axisMaterial);
         scene.add(axisLine);
     }
@@ -250,37 +246,34 @@ function createAxes(view) {
 
     if (view === "Fronter") {
         // X = Prey, Y = Predator
-        createAxis([0,0,0], [maxPrey,0,0], 0x00ff00);      // Prey axis
-        createAxis([0,0,0], [0,maxPredator,0], 0x0000ff);  // Predator axis
+        createAxis([0, 0, 0], [maxPrey, 0, 0], 0x00ff00);      // Prey axis
+        createAxis([0, 0, 0], [0, maxPredator, 0], 0x0000ff);  // Predator axis
 
-        createLabel(globalPreyLetter, new THREE.Vector3(maxPrey,0,0));
-        createLabel(globalPredatorLetter, new THREE.Vector3(0,maxPredator,0));
-    }
-    else if (view === "Sider") {
+        createLabel(globalPreyLetter, new THREE.Vector3(maxPrey, 0, 0));
+        createLabel(globalPredatorLetter, new THREE.Vector3(0, maxPredator, 0));
+    } else if (view === "Sider") {
         // X = Time, Y = Predator
-        createAxis([0,0,0], [maxTime,0,0], 0xff0000);      // Time axis
-        createAxis([0,0,0], [0,maxPredator,0], 0x0000ff);  // Predator axis
+        createAxis([0, 0, 0], [maxTime, 0, 0], 0xff0000);      // Time axis
+        createAxis([0, 0, 0], [0, maxPredator, 0], 0x0000ff);  // Predator axis
 
-        createLabel("Time", new THREE.Vector3(maxTime,0,0));
-        createLabel(globalPredatorLetter, new THREE.Vector3(0,maxPredator,0));
-    }
-    else if (view === "Topper") {
+        createLabel("Time", new THREE.Vector3(maxTime, 0, 0));
+        createLabel(globalPredatorLetter, new THREE.Vector3(0, maxPredator, 0));
+    } else if (view === "Topper") {
         // X = Time, Y = Prey
-        createAxis([0,0,0], [maxTime,0,0], 0xff0000);      // Time axis
-        createAxis([0,0,0], [0,maxPrey,0], 0x00ff00);       // Prey axis
+        createAxis([0, 0, 0], [maxTime, 0, 0], 0xff0000);      // Time axis
+        createAxis([0, 0, 0], [0, maxPrey, 0], 0x00ff00);       // Prey axis
 
-        createLabel("Time", new THREE.Vector3(maxTime,0,0));
-        createLabel(globalPreyLetter, new THREE.Vector3(0,maxPrey,0));
-    }
-    else {
+        createLabel("Time", new THREE.Vector3(maxTime, 0, 0));
+        createLabel(globalPreyLetter, new THREE.Vector3(0, maxPrey, 0));
+    } else {
         // 3D axes: X = Time, Y = Predator, Z = -Prey
         createAxis([0, 0, 0], [maxTime, 0, 0], 0xff0000);       // Time
         createAxis([0, 0, 0], [0, maxPredator, 0], 0x0000ff);   // Predator
         createAxis([0, 0, 0], [0, 0, -maxPrey], 0x00ff00);      // Prey
 
-        createLabel("Time", new THREE.Vector3(maxTime,0,0));
-        createLabel(globalPredatorLetter, new THREE.Vector3(0,maxPredator,0));
-        createLabel(globalPreyLetter, new THREE.Vector3(0,0,-maxPrey));
+        createLabel("Time", new THREE.Vector3(maxTime, 0, 0));
+        createLabel(globalPredatorLetter, new THREE.Vector3(0, maxPredator, 0));
+        createLabel(globalPreyLetter, new THREE.Vector3(0, 0, -maxPrey));
     }
 }
 
@@ -289,18 +282,15 @@ function positionCamera(view) {
         camera.position.set(midPrey, midPredator, 10);
         camera.lookAt(midPrey, midPredator, 0);
         controls.target.set(midPrey, midPredator, 0);
-    }
-    else if (view === "Sider") {
+    } else if (view === "Sider") {
         camera.position.set(midTime, midPredator, 10);
         camera.lookAt(midTime, midPredator, 0);
         controls.target.set(midTime, midPredator, 0);
-    }
-    else if (view === "Topper") {
+    } else if (view === "Topper") {
         camera.position.set(midTime, midPrey, 10);
         camera.lookAt(midTime, midPrey, 0);
         controls.target.set(midTime, midPrey, 0);
-    }
-    else {
+    } else {
         camera.position.set(-maxTime, maxPredator * 1.2, maxPrey * 0.7);
         camera.lookAt(midTime, midPredator, -midPrey);
         controls.target.set(midTime, midPredator, -midPrey);
@@ -315,51 +305,13 @@ function switchView(newView) {
     }
 
     currentView = newView;
-
-    if (newView === "3D") {
-        is2D = false;
-    } else {
-        is2D = true;
-    }
+    is2D = (newView !== "3D");
 
     document.getElementById("graph-container").innerHTML = "";
     visualizeData(globalSimulationData, globalPreyLetter, globalPredatorLetter, newView);
+
+    document.getElementById("return-to-3d").style.display = is2D ? "block" : "none";
 }
-
-/*function setCameraView(view) {
-    if (!camera || !controls) {
-        console.warn("Camera or controls are not initialized yet.");
-        return;
-    }
-
-    if (midTime === null || midPrey === null || midPredator === null) {
-        console.warn("Simulation data is not initialized yet.");
-        return;
-    }
-
-    is2D = true;  // Set 2D mode when switching to a flattened view
-
-    switch (view) {
-        case "Fronter": // Flattens the time axis
-            camera.position.set(2 * maxTime, midPredator, -midPrey);
-            break;
-        case "Sider":
-            camera.position.set(midTime, midPredator, 3 * maxPrey);
-            break;
-        case "Topper":
-            camera.position.set(midTime, 3 * maxPredator, -midPrey);
-            break;
-        default:
-            console.warn("Invalid view specified. Falling back to a distant perspective.");
-            camera.position.set(maxTime * -1, maxPredator * 1.2, maxPrey * 0.7);
-            is2D = false;
-            break;
-    }
-
-    camera.lookAt(midTime, midPredator, -midPrey);
-    controls.target.set(midTime, midPredator, -midPrey);
-    controls.update();
-}*/
 
 function observeInnerWidth(callback) {
     callback(window.innerWidth);
@@ -415,15 +367,13 @@ function generateData() {
     const simulationResult = runSimulation();
 
     if (!simulationResult) {
-        showAlert("Error: Simulation failed. No data returned.");
+        if (!error) {
+            showAlert("Error: Simulation failed. No data returned.");
+        }
         return;
     }
 
-    //console.log("Simulation result:", simulationResult);
-
     const {simulationData, preyLetter, predatorLetter} = simulationResult;
-
-    //console.log("Calling visualizeData with:", simulationData);
 
     globalSimulationData = simulationData;
     globalPreyLetter = preyLetter;
@@ -455,9 +405,24 @@ export function showAlert(message) {
         alertBox.style.display = "none";
 
         alert("I am 74% sure that someone will try to mess up my tool. 50% positive it will be Brynlee because she is QA" +
-            " testing which makes sense and is excusable. 24% positive it will be Andrew because he just would. 7% Cooper" +
-            " because he's curious if this program can do everything. 3% says it is someone else who may or may not be in" +
-            " the class.")
+            " testing which makes sense and is excusable. 24% positive it will be Andrew because he just would. 17% Cooper" +
+            " because he's curious if this program can do everything. 6% positive it will be Lauren because I gave her an" +
+            " information hazard. And 3% says it is someone else who may or may not be in the class.")
+    });
+}
+
+export function showWarning(message) {
+    const warningBox = document.getElementById("custom-warning");
+    const warningMessage = document.getElementById("warning-message");
+    const closeButton = document.getElementById("close-warning");
+
+    warningMessage.textContent = message;
+    warningBox.style.display = "flex";
+
+    closeButton.replaceWith(closeButton.cloneNode(true));
+
+    document.getElementById("close-warning").addEventListener("click", function () {
+        warningBox.style.display = "none";
     });
 }
 
@@ -526,8 +491,22 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-document.getElementById("graph-container").addEventListener("click", function () {
-    if (is2D) {
-        switchView("3D");
-    }
+document.getElementById("return-to-3d").addEventListener("click", () => {
+    switchView("3D");
 });
+
+helpIcon.addEventListener("click", () => {
+    helpModal.style.display = "flex";
+});
+
+helpIcon.addEventListener("touchstart", () => {
+    helpModal.style.display = "flex";
+});
+
+closeHelp.addEventListener("click", () => {
+    helpModal.style.display = "none";
+});
+
+helpIcon.addEventListener("click", openHelpModal);
+helpIcon.addEventListener("touchstart", openHelpModal);
+closeHelp.addEventListener("click", closeHelpModal);

@@ -10,79 +10,121 @@
     <link rel="stylesheet" href="static/styles.css">
 </head>
 <body>
-    <div id="header">
-        <h1>3D Visualizer</h1>
-    </div>
+<div id="header">
+    <h1>3D Visualizer</h1>
+</div>
 
-    <button id="toggle-ui">&#9664;</button>
+<button id="toggle-ui">&#9664;</button>
 
-    <div id="graph-container"></div>
+<div id="graph-container"></div>
 
-    <button id="toggle-table">&#9664;</button>
+<button id="toggle-table">&#9664;</button>
+<button id="return-to-3d" title="Return to 3D view">3D</button>
 
-    <div id="table-container">
-        <div id="dataTable"></div>
-    </div>
+<div id="table-container">
+    <div id="dataTable"></div>
+</div>
 
-    <div id="ui">
-        <div class="method-selection">
-            <h3>Numerical Method</h3>
-            <div class="horizontal">
-                <label>
-                    <input type="radio" name="method" value="euler" checked> Euler
-                </label>
-                <span></span>
-                <label>
-                    <input type="radio" name="method" value="runge-kutta"> Runge-Kutta
-                </label>
-            </div>
-        </div>
-
-        <div class="input">
-            <h3>Equations</h3>
-
-            <label>Prey Equation:</label>
-            <input type="text" id="prey_equation" value="3R - 1.4RF"><br>
-
-            <label>Predator Equation:</label>
-            <input type="text" id="predator_equation" value="-F + .8RF"><br>
-
-            <label>Initial Prey Population:</label>
-            <input type="number" id="initial_prey" value="1"><br>
-
-            <label>Initial Predator Population:</label>
-            <input type="number" id="initial_predator" value="1"><br>
-
-            <label>Time Step:</label>
-            <input type="number" id="time_step" value="0.05"><br>
-
-            <label>Final Time:</label>
-            <input type="number" id="final_time" value="12"><br>
-
-            <button onclick="generateData()">Graph!</button>
-        </div>
-
-        <div class="navigation">
-            <h3>Navigation</h3>
-            <button onclick="setCameraView('Angler')">Angler</button>
-            <button onclick="setCameraView('Fronter')">Fronter</button>
-            <button onclick="setCameraView('Sider')">Sider</button>
-            <button onclick="setCameraView('Topper')">Topper</button>
+<div id="ui">
+    <div class="method-selection">
+        <h3>
+            Numerical Method
+            <span id="help-icon" class="help-circle" title="Tap for help">?</span>
+        </h3>
+        <div class="horizontal">
+            <label>
+                <input type="radio" name="method" value="euler" checked> Euler
+            </label>
+            <span></span>
+            <label>
+                <input type="radio" name="method" value="runge-kutta"> Runge-Kutta
+            </label>
         </div>
     </div>
 
-    <div id="custom-alert" class="modal">
-        <div class="modal-content">
-            <p id="alert-message"></p>
-            <button id="close-alert">OK</button>
-        </div>
-    </div>
-    <audio id="error-sound" src="static/a.mp3"></audio>
+    <div class="input">
+        <h3>Equations</h3>
 
-    <div id="footer">
-        <p>Created by <a href="https://www.makennaworley.com" target="_blank">Makenna Worley</a> and Brynlee Thain</p>
+        <label>Prey Equation:</label>
+        <input type="text" id="prey_equation" value="3R - 1.4RF"><br>
+
+        <label>Predator Equation:</label>
+        <input type="text" id="predator_equation" value="-F + .8RF"><br>
+
+        <label>Initial Prey Population:</label>
+        <input type="number" id="initial_prey" value="1"><br>
+
+        <label>Initial Predator Population:</label>
+        <input type="number" id="initial_predator" value="1"><br>
+
+        <label>Time Step:</label>
+        <input type="number" id="time_step" value="0.05"><br>
+
+        <label>Final Time:</label>
+        <input type="number" id="final_time" value="12"><br>
+
+        <button onclick="generateData()">Graph!</button>
     </div>
 
-    <script type="module" src="static/display.js" defer></script>
+    <div class="navigation">
+        <h3>Navigation</h3>
+        <button onclick="setCameraView('Angler')">Angler</button>
+        <button onclick="setCameraView('Fronter')">Fronter</button>
+        <button onclick="setCameraView('Sider')">Sider</button>
+        <button onclick="setCameraView('Topper')">Topper</button>
+    </div>
+</div>
+
+<div id="custom-alert" class="modal-error">
+    <div class="modal-error-content">
+        <p id="alert-message"></p>
+        <button id="close-alert">OK</button>
+    </div>
+</div>
+<audio id="error-sound" src="static/a.mp3"></audio>
+
+<div id="custom-warning" class="modal-warning">
+    <div class="modal-warning-content">
+        <p id="warning-message"></p>
+        <button id="close-warning">OK</button>
+    </div>
+</div>
+
+<div id="help-modal" class="modal-help">
+    <div class="modal-help-content">
+        <h3>Numerical Methods Help</h3>
+        <p><strong>Euler's Method:</strong> A simple, first-order method that approximates values using the slope at the
+            current point.</p>
+        <p><strong>Runge-Kutta Method (4th Order):</strong> A more accurate method that calculates slopes at several
+            points within each time step and averages them.</p>
+        <h3>How to Use This Tool</h3>
+        <p><strong>🧮 Equations:</strong> Enter one equation each for the prey and predator population changes. Each
+            equation must have:</p>
+        <ul style="text-align: left;">
+            <li>One <strong>linear term</strong> like <code>3R</code></li>
+            <li>One <strong>interaction term</strong> like <code>-1.2RF</code></li>
+            <li><strong>No fractions</strong> or unsupported formats (e.g., <code>1/2R</code> will trigger an error)
+            </li>
+        </ul>
+        <p><strong>📊 Camera Views:</strong> Click any of the view buttons:
+        <ul style="text-align: left;">
+            <li><strong>Angler</strong>: 3D view</li>
+            <li><strong>Fronter</strong>: Prey vs Predator</li>
+            <li><strong>Sider</strong>: Predator vs Time</li>
+            <li><strong>Topper</strong>: Prey vs Time</li>
+        </ul>
+        </p>
+        <p>To return from a 2D view back to 3D, simply <strong>tap or click on the graph</strong>.</p>
+        <p><strong>📈 Viewing Table Data:</strong> After generating the graph, <strong>tap the arrow in the
+            top-right</strong> of the screen to reveal the simulation values table.</p>
+        <button id="close-help">Close</button>
+    </div>
+</div>
+
+<div id="footer">
+    <p>Created by <a href="https://www.makennaworley.com" target="_blank">Makenna Worley</a> and Brynlee Thain</p>
+</div>
+
+<script type="module" src="static/display.js" defer></script>
 </body>
 </html>

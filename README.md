@@ -1,6 +1,6 @@
 # 3D Visualization Plotter
 
-Final project for MATH 363: Differential Equations
+Final project for MATH 363 Differential Equations
 
 I wasn't a fan of the clunky Geogebra 3D tool that the workbook for **MATH 363: Differential Equations** uses, so I built my own.
 

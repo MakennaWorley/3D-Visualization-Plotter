@@ -152,7 +152,7 @@ export function parseEquation(equation) {
         const fraction = /\//g;
         if (fraction.test(equation)) {
             showWarning("This tool does not currently support fractions");
-            return null;
+            return "warning";
         }
 
         const termPattern = /([+-]?\d*\.?\d+|\d+|[+-])?\*?([A-Z])(?:\*?([A-Z]))?/g;
@@ -172,7 +172,7 @@ export function parseEquation(equation) {
 
             if (isNaN(coefficient)) {
                 showWarning(`Could not parse the coefficient: "${coefficient}"`);
-                return null;
+                return "warning";
             }
 
             if (var1 && !var2) {
@@ -189,23 +189,32 @@ export function parseEquation(equation) {
 
         if (!linearFound || !interactionFound) {
             showWarning("Invalid equation format. Ensure it has two terms, one with one variable and the other with two.");
-            return null;
+            return "warning";
         }
 
         return {growthRate, controlRate, preyLetter, predatorLetter};
     } catch (error) {
         showWarning("Cannot parse equation: " + equation);
-        return null;
+        return "warning";
     }
 }
 
 export function setUpPreyPredator(preyEquation, predatorEquation) {
     let preyParams = parseEquation(preyEquation);
+
+    if (preyParams === "warning") {
+        return "warning";
+    }
+
     let predatorParams = parseEquation(predatorEquation);
+
+    if (predatorParams === "warning") {
+        return "warning";
+    }
 
     if (Object.keys(preyParams).length < 1 || Object.keys(predatorParams).length < 1) {
         showWarning("Could not generate data with given parameters");
-        return null;
+        return "warning";
     }
 
     let prey = new Prey(preyParams.growthRate, preyParams.controlRate, preyParams.preyLetter, preyParams.predatorLetter);
@@ -217,7 +226,7 @@ export function setUpPreyPredator(preyEquation, predatorEquation) {
 export function setUpEuler(prey, predator, initialPreyPopulation, initialPredatorPopulation, timeStep, startTime, finalTime) {
     if (finalTime <= startTime) {
         showWarning("Final time must be greater than start time.");
-        return null;
+        return "warning";
     }
     return new Euler(initialPreyPopulation, initialPredatorPopulation, prey, predator, timeStep, startTime, finalTime);
 }
@@ -225,7 +234,7 @@ export function setUpEuler(prey, predator, initialPreyPopulation, initialPredato
 export function setUpRungeKutta(prey, predator, initialPreyPopulation, initialPredatorPopulation, timeStep, startTime, finalTime) {
     if (finalTime <= startTime) {
         showWarning("Final time must be greater than start time.");
-        return null;
+        return "warning";
     }
     return new RungeKutta(initialPreyPopulation, initialPredatorPopulation, prey, predator, timeStep, startTime, finalTime);
 }

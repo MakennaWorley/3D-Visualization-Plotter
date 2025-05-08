@@ -55,16 +55,34 @@ function runSimulation() {
             return;
         }
 
-        const {prey, predator} = setUpPreyPredator(preyEquation, predatorEquation);
+        const totalSteps = Math.ceil((finalTime - startTime) / timeStep);
+        if (totalSteps > MAX_RENDER_POINTS) {
+            showAlert(`Error: Too many datapoints to render (${totalSteps}). Please reduce final time or increase time step.`);
+            error = true;
+            return;
+        }
+
+        const preypredator = setUpPreyPredator(preyEquation, predatorEquation);
+        if (preypredator === "warning") {
+            error = true;
+            return;
+        }
+
+        const {prey, predator} = preypredator;
 
         const method = document.querySelector('input[name="method"]:checked').value;
-        let simulation = (
+        let simulationSetup = (
             method === "runge-kutta"
                 ? setUpRungeKutta
                 : setUpEuler
         )(prey, predator, initialPreyPopulation, initialPredatorPopulation, timeStep, startTime, finalTime);
 
-        const result = simulation.calculatePoints();
+        if (simulationSetup === "warning") {
+            error = true;
+            return;
+        }
+
+        const result = simulationSetup.calculatePoints();
 
         if (!result.length) {
             showAlert("Simulation produced no valid results.");
@@ -366,10 +384,13 @@ function printTable(data, preyLetter, predatorLetter) {
 function generateData() {
     const simulationResult = runSimulation();
 
-    if (!simulationResult) {
+    if (!simulationResult || typeof simulationResult !== "object") {
+        console.log("simulationResult is wrong");
         if (!error) {
+            console.log("error is false");
             showAlert("Error: Simulation failed. No data returned.");
         }
+        error = true;
         return;
     }
 
